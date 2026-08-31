@@ -51,7 +51,7 @@ dependencies = [
   # pywebview does not install a Linux GUI backend by default. Keep GTK's
   # Python bridge in the Linux dependency closure so source and frozen builds
   # can actually open Settings/Setup instead of failing on `import gi`.
-  "PyGObject==3.50.0; platform_system == 'Linux'",
+  "PyGObject==3.56.3; platform_system == 'Linux'",
   "pycairo>=1.26; platform_system == 'Linux'",
   "sounddevice>=0.4.7",
   "uvicorn>=0.30",
