@@ -164,7 +164,7 @@ jobs:
           Copy-Item dist/DCENT_Voice-Setup.exe $setup
           ./scripts/write_sha256.ps1 -Path $setup
 
-      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+      - uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
           draft: true
           files: |
@@ -280,7 +280,7 @@ jobs:
           bash scripts/smoke_linux_settings.sh \
             "$(find dist -maxdepth 1 -name 'DCENT_Voice-linux-*.AppImage' -print -quit)" 10
 
-      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+      - uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
           draft: true
           files: |
@@ -403,7 +403,7 @@ jobs:
             --allow-fail desktop.accessibility \
             --allow-fail desktop.microphone
 
-      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+      - uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
           draft: true
           files: |
