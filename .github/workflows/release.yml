@@ -1,0 +1,414 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  preflight:
+    name: Release source preflight
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+
+      - name: Install locked release test environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            libportaudio2 xvfb xclip \
+            gir1.2-gtk-3.0 gir1.2-ayatanaappindicator3-0.1
+          uv sync --extra dev --frozen
+
+      - name: Validate tag and package version
+        run: uv run python scripts/release_version.py --check-version "${{ github.ref_name }}"
+
+      - name: Static, typing, schema, and packaging source gates
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+          uv audit
+          uv run mypy src/dcent_voice --ignore-missing-imports --no-error-summary --show-error-codes --check-untyped-defs
+          uv run python scripts/check_macos_pipeline.py
+          xvfb-run -a uv run pytest -q
+          uv build --no-sources
+
+  windows:
+    name: Build Windows artifact
+    needs: preflight
+    runs-on: windows-latest
+    env:
+      # WS2 makes every startup failure raise a modal MessageBoxW. A modal
+      # dialog on a headless runner hangs the step until the job timeout, so
+      # failures must go to the log and the exit code instead. Job-level so it
+      # reaches every step that runs the exe, including the doctor step.
+      DCENT_VOICE_NO_DIALOGS: "1"
+      DCENT_VOICE_DISABLE_AUTOSTART: "1"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: "8.0.424"
+
+      - name: Validate tag and release metadata version
+        shell: pwsh
+        run: uv run python scripts/release_version.py --check-version "${{ github.ref_name }}"
+
+      - name: Prove locked wheel bundle installs with network disabled
+        shell: pwsh
+        run: |
+          uv run python scripts/download_models.py --include-wheels --accept-model-license --models "," --bundle-dir build/offline-wheel-gate
+          uv run python scripts/verify_offline_bundle.py build/offline-wheel-gate/dcent-voice-offline-bundle.json
+          ./scripts/install.ps1 -Offline -NoModels -BundlePath build/offline-wheel-gate -InstallDir build/offline-wheel-venv
+
+      - name: Build release package
+        shell: pwsh
+        run: ./scripts/build_pyinstaller.ps1 -NoConfirm
+
+      # AC1/AC7: prove the frozen payload starts on a profile that has never
+      # seen DCENT_Voice, from a neutral working directory, before anything is
+      # signed or published.
+      - name: Fresh-profile smoke (built payload, neutral cwd)
+        shell: pwsh
+        env:
+          DCENT_VOICE_PROFILE_ROOT: ${{ github.workspace }}\build\qa-profiles\release
+        run: |
+          $ErrorActionPreference = "Continue"
+          New-Item -ItemType Directory -Force -Path build\qa-logs | Out-Null
+          uv run python scripts/fresh_profile_smoke.py `
+            --executable dist\DCENT_Voice\dcent-voice.exe `
+            --cwd C:\ 2>&1 | Tee-Object -FilePath build\qa-logs\fresh-profile-release.log
+          $code = $LASTEXITCODE
+          $ErrorActionPreference = "Stop"
+          if ($code -ne 0) { throw "Fresh-profile smoke failed for the release payload (exit $code)." }
+
+      # scripts/qa/assert_doctor.py owns the verdict: it validates the report
+      # against docs/schemas/doctor.schema.json and fails on any `fail` outside
+      # the explicit --allow-fail list. A release runner gets no exceptions.
+      - name: Doctor report (release payload)
+        if: hashFiles('scripts/qa/doctor-enabled') != ''
+        shell: pwsh
+        env:
+          DCENT_VOICE_NO_OPEN: "1"
+        run: |
+          $ErrorActionPreference = "Continue"
+          New-Item -ItemType Directory -Force -Path build\qa-logs | Out-Null
+          dist\DCENT_Voice\dcent-voice.exe doctor `
+            --json build\qa-logs\doctor-release.json --no-launch-checks --no-zip
+          Write-Host "doctor exit: $LASTEXITCODE"
+          $ErrorActionPreference = "Stop"
+          uv run python scripts/qa/assert_doctor.py build\qa-logs\doctor-release.json
+
+      - name: Require Authenticode credentials for tagged releases
+        shell: pwsh
+        env:
+          WINDOWS_CERT_PFX_BASE64: ${{ secrets.WINDOWS_CERT_PFX_BASE64 }}
+          WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINDOWS_CERT_PFX_BASE64) -or
+              [string]::IsNullOrWhiteSpace($env:WINDOWS_CERT_PASSWORD)) {
+            throw "Tagged Windows releases require Authenticode credentials."
+          }
+
+      - name: Sign frozen exe
+        shell: pwsh
+        env:
+          WINDOWS_CERT_PFX_BASE64: ${{ secrets.WINDOWS_CERT_PFX_BASE64 }}
+          WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+        run: ./scripts/sign_windows.ps1 dist/DCENT_Voice/dcent-voice.exe
+
+      - name: Verify frozen exe Authenticode signature
+        shell: pwsh
+        run: |
+          $signature = Get-AuthenticodeSignature -LiteralPath dist/DCENT_Voice/dcent-voice.exe
+          if ($signature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
+            throw "Frozen executable Authenticode status is $($signature.Status), expected Valid."
+          }
+
+      - name: Build Setup.exe
+        shell: pwsh
+        run: ./scripts/build_installer.ps1
+
+      - name: Sign Setup.exe
+        shell: pwsh
+        env:
+          WINDOWS_CERT_PFX_BASE64: ${{ secrets.WINDOWS_CERT_PFX_BASE64 }}
+          WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+        run: ./scripts/sign_windows.ps1 dist/DCENT_Voice-Setup.exe
+
+      - name: Verify Setup.exe Authenticode signature
+        shell: pwsh
+        run: |
+          $signature = Get-AuthenticodeSignature -LiteralPath dist/DCENT_Voice-Setup.exe
+          if ($signature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
+            throw "Setup executable Authenticode status is $($signature.Status), expected Valid."
+          }
+
+      - name: Package
+        shell: pwsh
+        run: |
+          ./scripts/build_portable_zip.ps1 -Output "DCENT_Voice-windows-${{ github.ref_name }}.zip"
+          $setup = "DCENT_Voice-Setup-${{ github.ref_name }}.exe"
+          Copy-Item dist/DCENT_Voice-Setup.exe $setup
+          ./scripts/write_sha256.ps1 -Path $setup
+
+      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          draft: true
+          files: |
+            DCENT_Voice-windows-*.zip
+            DCENT_Voice-windows-*.zip.sha256
+            DCENT_Voice-Setup-*.exe
+            DCENT_Voice-Setup-*.exe.sha256
+          body: |
+            DCENT Voice ${{ github.ref_name }} from D-Central Technologies.
+
+            This job attaches only the Windows artifacts listed below.
+            Those files were Authenticode-signed and signature-verified in
+            this workflow. Linux and macOS packages, if any, come from
+            sibling jobs; do not infer them from the tag name.
+
+  linux:
+    name: Build Linux AppImage and deb
+    needs: preflight
+    # Jammy's glibc 2.35 keeps the AppImage runnable on a materially wider
+    # distro range than artifacts linked on Ubuntu 24.04/glibc 2.39.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    env:
+      # See the Windows job: WS2's fatal-error surface must not block a
+      # headless runner on a dialog.
+      DCENT_VOICE_NO_DIALOGS: "1"
+      DCENT_VOICE_DISABLE_AUTOSTART: "1"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+
+      - name: Validate tag and release metadata version
+        run: uv run python scripts/release_version.py --check-version "${{ github.ref_name }}"
+
+      - name: Install native Linux build and audio dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            appstream build-essential python3-dev linux-libc-dev libportaudio2 portaudio19-dev \
+            libgtk-3-0 libgtk-3-dev libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev \
+            gir1.2-webkit2-4.0 xvfb xclip xdotool \
+            libgirepository1.0-dev libcairo2-dev pkg-config libx11-6 libxtst6
+
+      - name: Install AppImage build tool
+        shell: bash
+        run: |
+          curl --fail --location --retry 3 \
+            https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage \
+            --output "$RUNNER_TEMP/appimagetool-x86_64.AppImage"
+          echo "ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0  $RUNNER_TEMP/appimagetool-x86_64.AppImage" \
+            | sha256sum --check --strict
+          chmod 0755 "$RUNNER_TEMP/appimagetool-x86_64.AppImage"
+          curl --fail --location --retry 3 \
+            https://github.com/AppImage/type2-runtime/releases/download/continuous/runtime-x86_64 \
+            --output "$RUNNER_TEMP/runtime-x86_64"
+          test "$(stat --format=%s "$RUNNER_TEMP/runtime-x86_64")" -eq 944632
+          echo "1cc49bcf1e2ccd593c379adb17c9f85a36d619088296504de95b1d06215aebbf  $RUNNER_TEMP/runtime-x86_64" \
+            | sha256sum --check --strict
+
+      - name: Build native release artifacts
+        shell: bash
+        env:
+          APPIMAGETOOL: ${{ runner.temp }}/appimagetool-x86_64.AppImage
+          APPIMAGE_RUNTIME_FILE: ${{ runner.temp }}/runtime-x86_64
+          DCENT_VOICE_VERSION: ${{ github.ref_name }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: bash scripts/build_linux_appimage.sh
+
+      - name: Fresh-profile smoke (AppImage, neutral cwd)
+        shell: bash
+        env:
+          XDG_CONFIG_HOME: ${{ github.workspace }}/build/qa-profiles/xdg-config
+          XDG_DATA_HOME: ${{ github.workspace }}/build/qa-profiles/xdg-data
+          XDG_STATE_HOME: ${{ github.workspace }}/build/qa-profiles/xdg-state
+          DCENT_VOICE_PROFILE_ROOT: ${{ github.workspace }}/build/qa-profiles/appimage
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+        run: |
+          set -euo pipefail
+          mkdir -p build/qa-logs "$XDG_CONFIG_HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME"
+          appimage="$(find dist -maxdepth 1 -name 'DCENT_Voice-linux-*.AppImage' -print -quit)"
+          test -n "$appimage" || { echo "No AppImage was produced." >&2; exit 1; }
+          xvfb-run -a uv run python scripts/fresh_profile_smoke.py \
+            --executable "$(readlink -f "$appimage")" \
+            --cwd / 2>&1 | tee build/qa-logs/fresh-profile-appimage.log
+
+      # AC4 parity: WS9's desktop.* checks only run on Linux. xclip + xdotool
+      # are in the apt list above so desktop.injection_tools passes under xvfb,
+      # whose session reads as x11.
+      - name: Doctor report (AppImage)
+        if: hashFiles('scripts/qa/doctor-enabled') != ''
+        shell: bash
+        env:
+          DCENT_VOICE_NO_OPEN: "1"
+          DCENT_VOICE_PROFILE_ROOT: ${{ github.workspace }}/build/qa-profiles/doctor
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+        run: |
+          set -uo pipefail
+          mkdir -p build/qa-logs "$DCENT_VOICE_PROFILE_ROOT"
+          appimage="$(find dist -maxdepth 1 -name 'DCENT_Voice-linux-*.AppImage' -print -quit)"
+          xvfb-run -a "$(readlink -f "$appimage")" doctor \
+            --json build/qa-logs/doctor-linux.json --no-launch-checks --no-zip
+          echo "doctor exit: $?"
+          set -e
+          uv run python scripts/qa/assert_doctor.py build/qa-logs/doctor-linux.json
+
+      - name: Smoke packaged Linux settings lifecycle
+        shell: bash
+        run: |
+          bash scripts/smoke_linux_settings.sh \
+            "$(find dist -maxdepth 1 -name 'DCENT_Voice-linux-*.AppImage' -print -quit)" 10
+
+      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          draft: true
+          files: |
+            dist/DCENT_Voice-linux-*.AppImage
+            dist/DCENT_Voice-linux-*.AppImage.sha256
+            dist/DCENT_Voice-linux-*.deb
+            dist/DCENT_Voice-linux-*.deb.sha256
+
+  macos:
+    name: Build macOS dmg and zip
+    needs: preflight
+    runs-on: macos-14
+    timeout-minutes: 90
+    env:
+      # See the Windows job: WS2's fatal-error surface must not block a
+      # headless runner on a dialog.
+      DCENT_VOICE_NO_DIALOGS: "1"
+      DCENT_VOICE_DISABLE_AUTOSTART: "1"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+
+      - name: Validate tag and release metadata version
+        run: uv run python scripts/release_version.py --check-version "${{ github.ref_name }}"
+
+      - name: Require signing and notarization credentials for tagged releases
+        shell: bash
+        env:
+          CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          NOTARY_KEY_BASE64: ${{ secrets.MACOS_NOTARY_KEY_BASE64 }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+          MACOS_NOTARY_ISSUER: ${{ secrets.MACOS_NOTARY_ISSUER }}
+        run: |
+          for name in CERT_P12_BASE64 CERT_PASSWORD NOTARY_KEY_BASE64 \
+            MACOS_SIGNING_IDENTITY MACOS_NOTARY_KEY_ID MACOS_NOTARY_ISSUER; do
+            [[ -n "${!name:-}" ]] || {
+              echo "Tagged macOS releases require $name." >&2
+              exit 1
+            }
+          done
+
+      - name: Import signing and notarization credentials
+        shell: bash
+        env:
+          CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          NOTARY_KEY_BASE64: ${{ secrets.MACOS_NOTARY_KEY_BASE64 }}
+        run: |
+          if [[ -n "$CERT_P12_BASE64" ]]; then
+            echo "$CERT_P12_BASE64" | base64 --decode > "$RUNNER_TEMP/signing.p12"
+            security create-keychain -p ci-build "$RUNNER_TEMP/dcent-build.keychain-db"
+            security set-keychain-settings -lut 21600 "$RUNNER_TEMP/dcent-build.keychain-db"
+            security unlock-keychain -p ci-build "$RUNNER_TEMP/dcent-build.keychain-db"
+            security import "$RUNNER_TEMP/signing.p12" \
+              -P "$CERT_PASSWORD" -A -t cert -f pkcs12 \
+              -k "$RUNNER_TEMP/dcent-build.keychain-db"
+            security list-keychains -d user -s "$RUNNER_TEMP/dcent-build.keychain-db"
+            security set-key-partition-list -S apple-tool:,apple: -s \
+              -k ci-build "$RUNNER_TEMP/dcent-build.keychain-db"
+          fi
+          if [[ -n "$NOTARY_KEY_BASE64" ]]; then
+            echo "$NOTARY_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/AuthKey.p8"
+          fi
+
+      - name: Build native release artifacts
+        shell: bash
+        env:
+          DCENT_VOICE_VERSION: ${{ github.ref_name }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+          MACOS_NOTARY_ISSUER: ${{ secrets.MACOS_NOTARY_ISSUER }}
+        run: |
+          if [[ -f "$RUNNER_TEMP/AuthKey.p8" ]]; then
+            export MACOS_NOTARY_KEY="$RUNNER_TEMP/AuthKey.p8"
+          fi
+          bash scripts/build_macos_app.sh
+
+      - name: Verify signed and notarized release status
+        run: |
+          uv run python -c 'import json, pathlib; p=json.loads(pathlib.Path("dist/macos-pipeline-status.json").read_text()); assert p["signed"] is True and p["notarized"] is True and p["unsigned"] is False, p'
+
+      - name: Fresh-profile smoke (.app, neutral cwd)
+        shell: bash
+        env:
+          DCENT_VOICE_PROFILE_ROOT: ${{ github.workspace }}/build/qa-profiles/macos-app
+        run: |
+          set -euo pipefail
+          mkdir -p build/qa-logs "$RUNNER_TEMP/qa-home"
+          # The .app resolves its profile from HOME, so the smoke must not run
+          # under the runner's real home. `uv run` would re-resolve its cache
+          # under the fake HOME, so call the synced interpreter directly.
+          HOME="$RUNNER_TEMP/qa-home" ./.venv/bin/python scripts/fresh_profile_smoke.py \
+            --executable "$GITHUB_WORKSPACE/dist/DCENT Voice.app/Contents/MacOS/dcent-voice" \
+            --cwd / 2>&1 | tee build/qa-logs/fresh-profile-macos-app.log
+
+      # A headless macos-14 runner can never hold the Accessibility TCC grant
+      # and has no microphone to authorize, so WS9's two TCC checks are allowed
+      # to fail here. Everything else still gates the release.
+      - name: Doctor report (.app)
+        if: hashFiles('scripts/qa/doctor-enabled') != ''
+        shell: bash
+        env:
+          DCENT_VOICE_NO_OPEN: "1"
+          DCENT_VOICE_PROFILE_ROOT: ${{ github.workspace }}/build/qa-profiles/doctor
+        run: |
+          set -uo pipefail
+          mkdir -p build/qa-logs "$DCENT_VOICE_PROFILE_ROOT" "$RUNNER_TEMP/qa-home"
+          HOME="$RUNNER_TEMP/qa-home" \
+            "$GITHUB_WORKSPACE/dist/DCENT Voice.app/Contents/MacOS/dcent-voice" doctor \
+            --json build/qa-logs/doctor-macos.json --no-launch-checks --no-zip
+          echo "doctor exit: $?"
+          set -e
+          uv run python scripts/qa/assert_doctor.py build/qa-logs/doctor-macos.json \
+            --allow-fail desktop.accessibility \
+            --allow-fail desktop.microphone
+
+      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          draft: true
+          files: |
+            dist/DCENT_Voice-macos-*.dmg
+            dist/DCENT_Voice-macos-*.dmg.sha256
+            dist/DCENT_Voice-macos-*.zip
+            dist/DCENT_Voice-macos-*.zip.sha256
+            dist/macos-pipeline-status.json

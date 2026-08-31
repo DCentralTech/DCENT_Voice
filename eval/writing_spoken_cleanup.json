@@ -1,0 +1,30 @@
+{
+  "schema": "dcent-writing-eval-v1",
+  "description": "Spoken local Auto Cleanup cues for one utterance. Not a cloud Auto Cleanup service.",
+  "items": [
+    {
+      "id": "cleanup-high-prefix",
+      "kind": "compose",
+      "style": "plain",
+      "input": "cleanup high I think we should ship Monday",
+      "must_contain": ["We should ship Monday."],
+      "must_not_contain": ["I think", "cleanup high"]
+    },
+    {
+      "id": "no-cleanup-keeps-fillers",
+      "kind": "compose",
+      "style": "plain",
+      "input": "no cleanup um I was going to I want to ship Monday",
+      "must_contain": ["um"],
+      "must_not_contain": ["no cleanup"]
+    },
+    {
+      "id": "content-cleanup-kitchen",
+      "kind": "compose",
+      "style": "plain",
+      "input": "cleanup the kitchen",
+      "must_contain": ["kitchen"],
+      "must_not_contain": ["ship"]
+    }
+  ]
+}

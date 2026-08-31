@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "description": "Public real-speech multilingual corpus on the shipped local Parakeet path. Routing/quality check for English plus at least two other languages. Not a large-scale language benchmark.",
+  "items": [
+    {
+      "id": "hello-en",
+      "audio": "tests/fixtures/audio/hello.wav",
+      "reference": "Hello world",
+      "tags": ["real-speech", "en", "shipped-default"],
+      "language": "en"
+    },
+    {
+      "id": "lingua-libre-fr-je-mappelle",
+      "audio": "tests/fixtures/audio/eval/multilingual/fr-je-mappelle.wav",
+      "reference": "Je m'appelle.",
+      "tags": ["public", "real-speech", "lingua-libre", "fr", "multilingual-smoke"],
+      "language": "fr"
+    },
+    {
+      "id": "lingua-libre-de-hallo",
+      "audio": "tests/fixtures/audio/eval/multilingual/de-hallo.wav",
+      "reference": "Hallo",
+      "tags": ["public", "real-speech", "lingua-libre", "de"],
+      "language": "de"
+    },
+    {
+      "id": "lingua-libre-es-hola",
+      "audio": "tests/fixtures/audio/eval/multilingual/es-hola.wav",
+      "reference": "Hola",
+      "tags": ["public", "real-speech", "lingua-libre", "es"],
+      "language": "es"
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dcentral.tech/schemas/dcent-voice/doctor.schema.json",
+  "title": "DCENT_Voice doctor report",
+  "description": "Output of `dcent-voice doctor --json`. Every check carries a stable id (documented in docs/TROUBLESHOOTING.md), a status, a plain-language detail and, when it is not a pass, a remediation the user can act on.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "tool",
+    "appVersion",
+    "generatedAt",
+    "summary",
+    "checks"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "tool": {
+      "type": "string",
+      "const": "dcent-voice doctor"
+    },
+    "appVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "durationSeconds": {
+      "type": "number",
+      "minimum": 0
+    },
+    "options": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "launchChecks": {
+          "type": "boolean",
+          "description": "False when --no-launch-checks was passed; the launch.* checks are then reported as skipped."
+        }
+      },
+      "required": [
+        "launchChecks"
+      ]
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pass",
+        "warn",
+        "fail",
+        "total",
+        "status"
+      ],
+      "properties": {
+        "pass": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fail": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "warn",
+            "fail"
+          ],
+          "description": "The most severe status across all checks. Exit code 0 for pass/warn, 1 for fail."
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "status",
+          "detail",
+          "remediation",
+          "data"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$",
+            "description": "Stable check identifier, e.g. env.write_access or payload.models."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "warn",
+              "fail"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What was observed, in a sentence a non-developer can read."
+          },
+          "remediation": {
+            "type": "string",
+            "description": "What the user should do about it. Empty when the check passed."
+          },
+          "data": {
+            "type": "object",
+            "description": "Structured evidence for this check. Shape varies per check id."
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "description": "Absolute paths of the files this run wrote, so a caller holding only the JSON (for example the tray, which runs doctor in a child process) can find the bundle to hand to the user.",
+      "additionalProperties": false,
+      "required": [
+        "json",
+        "text",
+        "zip"
+      ],
+      "properties": {
+        "json": {
+          "type": "string",
+          "description": "This report."
+        },
+        "text": {
+          "type": "string",
+          "description": "The human-readable twin."
+        },
+        "zip": {
+          "type": "string",
+          "description": "The diagnostics bundle, or empty when --no-zip was used."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,66 @@
+<!doctype html>
+<!-- DCENT_Voice — open-source, local-first voice dictation
+     Copyright (c) 2026 D-Central Technologies — decentralized technologies for digital sovereignty
+     SPDX-License-Identifier: MIT -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../../src/dcent_voice/ui/web/overlay.css">
+    <style>
+      html, body { background: #14110f; }
+    </style>
+    <title>Overlay frame</title>
+  </head>
+  <body>
+    <main class="overlay-shell" aria-hidden="true">
+      <div class="privacy-ring"></div>
+      <div id="iconHost" class="icon-host"></div>
+      <div class="cloud-badge" title="Cloud or hybrid path"></div>
+      <p id="stateLabel" class="state-label">Listening</p>
+      <p id="statusMessage" class="status-message" hidden></p>
+    </main>
+    <script>
+      const params = new URLSearchParams(location.search);
+      const state = params.get("state") || "listening";
+      const message = params.get("msg") || "";
+      const labels = {
+        listening: "Listening",
+        loading: "Loading model",
+        processing: "Processing",
+        streaming: "Live",
+        command: "Command",
+        active: "Inserted",
+        discarded: "No speech",
+        permission: "Microphone",
+      };
+      const iconClass = {
+        listening: "is-listening",
+        loading: "is-loading",
+        processing: "is-processing",
+        streaming: "is-listening",
+        command: "is-listening",
+        active: "is-active",
+        discarded: "is-discarded",
+        permission: "is-discarded",
+      };
+      document.body.classList.add("is-visible", `state-${state}`);
+      if (params.get("cloud") === "1") document.body.classList.add("privacy-cloud");
+      document.getElementById("stateLabel").textContent = labels[state] || state;
+      const status = document.getElementById("statusMessage");
+      if (message) {
+        status.textContent = message;
+        status.hidden = false;
+      }
+      fetch("../../src/dcent_voice/ui/web/dcent_voice_icon.svg")
+        .then((r) => r.text())
+        .then((svg) => {
+          const host = document.getElementById("iconHost");
+          host.innerHTML = svg;
+          const icon = host.querySelector("#dcent-voice-icon");
+          if (!icon) return;
+          icon.classList.add(iconClass[state] || "is-listening");
+          icon.style.setProperty("--voice-pulse", params.get("pulse") || "0.45");
+        });
+    </script>
+  </body>
+</html>

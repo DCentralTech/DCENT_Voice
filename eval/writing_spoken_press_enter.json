@@ -1,0 +1,29 @@
+{
+  "schema": "dcent-writing-eval-v1",
+  "description": "Spoken press enter is stripped from composed text. Enter keystroke is pipeline-only, not a cloud submit.",
+  "items": [
+    {
+      "id": "press-enter-stripped",
+      "kind": "compose",
+      "style": "plain",
+      "input": "hello world press enter",
+      "must_contain": ["Hello world."],
+      "must_not_contain": ["press enter"]
+    },
+    {
+      "id": "press-enter-alone-empty",
+      "kind": "compose",
+      "style": "plain",
+      "input": "press enter",
+      "exact": ""
+    },
+    {
+      "id": "press-enter-content-kept",
+      "kind": "compose",
+      "style": "plain",
+      "input": "press enter to continue",
+      "must_contain": ["Press enter to continue."],
+      "must_not_contain": ["ship"]
+    }
+  ]
+}

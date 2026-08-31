@@ -1,0 +1,31 @@
+{
+  "schema": "dcent-writing-eval-v1",
+  "description": "Local notes-style writing fixtures. Not ASR WER. Not cloud notetaker parity.",
+  "items": [
+    {
+      "id": "decision-action-next",
+      "style": "notes",
+      "input": "we decided to ship Monday action item update the timeline next step ping alex",
+      "must_contain": ["## Decision", "Ship Monday.", "## Action items", "- Update the timeline", "## Next steps", "- Ping alex"],
+      "must_not_contain": ["Hi ", "Thanks"]
+    },
+    {
+      "id": "ordinal-list",
+      "style": "notes",
+      "input": "first milk second eggs third bread",
+      "exact": "## Action items\n- Milk\n- Eggs\n- Bread"
+    },
+    {
+      "id": "clean-prose-untouched",
+      "style": "notes",
+      "input": "The build is green.",
+      "exact": "The build is green."
+    },
+    {
+      "id": "plain-default-unchanged",
+      "style": "plain",
+      "input": "we decided to ship Monday action item update the timeline",
+      "exact": "we decided to ship Monday action item update the timeline"
+    }
+  ]
+}

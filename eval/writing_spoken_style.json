@@ -1,0 +1,37 @@
+{
+  "schema": "dcent-writing-eval-v1",
+  "description": "Spoken local style cues for one utterance. Not an overlay style picker.",
+  "items": [
+    {
+      "id": "email-style-prefix",
+      "kind": "compose",
+      "style": "plain",
+      "input": "email style hey send the deck thanks",
+      "must_contain": ["Hey", "Thanks"],
+      "must_not_contain": ["email style"]
+    },
+    {
+      "id": "as-notes-prefix",
+      "kind": "compose",
+      "style": "plain",
+      "input": "as notes we decided to ship Monday action item update the timeline",
+      "must_contain": ["## Decision", "## Action items"],
+      "must_not_contain": ["as notes"]
+    },
+    {
+      "id": "code-style-prefix",
+      "kind": "compose",
+      "style": "email",
+      "input": "use code style git status",
+      "exact": "git status"
+    },
+    {
+      "id": "content-code-style-untouched",
+      "kind": "compose",
+      "style": "plain",
+      "input": "code style is important",
+      "must_contain": ["Code style is important"],
+      "must_not_contain": ["git"]
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dcentral.tech/dcent/schemas/dvap/registry-entry.schema.json",
+  "title": "DVAP Registry Entry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "moduleId",
+    "displayName",
+    "version",
+    "endpoint",
+    "tokenRef",
+    "sovereigntyClass",
+    "capabilities",
+    "capabilitySovereignty"
+  ],
+  "properties": {
+    "moduleId": { "type": "string", "minLength": 1 },
+    "displayName": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "minLength": 1 },
+    "endpoint": { "type": "string", "format": "uri" },
+    "tokenRef": { "type": "string", "minLength": 1 },
+    "pid": { "type": "integer", "minimum": 1 },
+    "launch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command"],
+      "properties": {
+        "command": { "type": "string", "minLength": 1 },
+        "args": { "type": "array", "items": { "type": "string" } },
+        "cwd": { "type": "string", "minLength": 1 }
+      }
+    },
+    "sovereigntyClass": {
+      "type": "string",
+      "enum": ["LOCAL", "LAN", "SERVER_EGRESS", "CLOUD", "UNKNOWN"]
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "capabilitySovereignty": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["capability", "sovereigntyClass"],
+        "properties": {
+          "capability": { "type": "string", "minLength": 1 },
+          "sovereigntyClass": {
+            "type": "string",
+            "enum": ["LOCAL", "LAN", "SERVER_EGRESS", "CLOUD", "UNKNOWN"]
+          },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

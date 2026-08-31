@@ -1,0 +1,174 @@
+{
+  "registryEntries": [
+    {
+      "moduleId": "dcent-voice",
+      "displayName": "DCENT Voice",
+      "version": "0.0.0",
+      "endpoint": "http://127.0.0.1:47631",
+      "tokenRef": "dcent-voice-token",
+      "pid": 4242,
+      "sovereigntyClass": "LOCAL",
+      "capabilities": [
+        "stt.partial",
+        "stt.final",
+        "audio.in.stream",
+        "tts.append",
+        "tts.cancel",
+        "barge_in",
+        "tts.synth.stream",
+        "voice.model.download"
+      ],
+      "capabilitySovereignty": [
+        {
+          "capability": "stt.final",
+          "sovereigntyClass": "LOCAL",
+          "reason": "Audio transcription remains on this machine."
+        },
+        {
+          "capability": "voice.model.download",
+          "sovereigntyClass": "SERVER_EGRESS",
+          "reason": "Model asset download can contact upstream registries only after explicit user action."
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "type": "hello",
+      "protocol": "dvap",
+      "version": "1.2",
+      "moduleId": "dcent-voice",
+      "capabilities": ["stt.partial", "stt.final", "audio.in.stream", "voice.model.download"],
+      "sovereigntyClass": "LOCAL",
+      "capabilitySovereignty": [
+        {
+          "capability": "stt.final",
+          "sovereigntyClass": "LOCAL",
+          "reason": "Audio transcription remains on this machine."
+        },
+        {
+          "capability": "voice.model.download",
+          "sovereigntyClass": "SERVER_EGRESS",
+          "reason": "Model asset download can contact upstream registries only after explicit user action."
+        }
+      ]
+    },
+    {
+      "type": "welcome",
+      "sessionId": "session_123",
+      "acceptedVersion": "1.0",
+      "capabilities": ["stt.partial", "stt.final", "audio.in.stream"]
+    },
+    { "type": "stt.partial", "text": "run the", "stable": false },
+    { "type": "stt.final", "text": "run the tests and fix the failure" },
+    {
+      "type": "audio.in.begin",
+      "requestId": "phone_1",
+      "sampleRate": 16000,
+      "channels": 1,
+      "encoding": "pcm_s16le"
+    },
+    {
+      "type": "audio.in.begin",
+      "requestId": "phone_code",
+      "sampleRate": 16000,
+      "channels": 1,
+      "encoding": "pcm_s16le",
+      "style": "formal",
+      "app_context": "Code.exe"
+    },
+    { "type": "audio.in.end", "requestId": "phone_1" },
+    { "type": "stt.final", "requestId": "phone_1", "text": "what finished" },
+    { "type": "tts.synth.begin", "requestId": "phone_1", "text": "The build passed." },
+    { "type": "text.compose", "text": "vip", "style": "formal" },
+    {
+      "type": "text.compose",
+      "text": "vip",
+      "style": "formal",
+      "app_context": "Code.exe"
+    },
+    { "type": "text.composed", "text": "I'm Ada", "style": "formal" },
+    {
+      "type": "tts.audio.begin",
+      "requestId": "phone_1",
+      "sampleRate": 24000,
+      "channels": 1,
+      "encoding": "pcm_s16le"
+    },
+    { "type": "tts.audio.end", "requestId": "phone_1" },
+    { "type": "tts.append", "text": "I found one failing test." },
+    { "type": "tts.cancel", "reason": "barge-in" },
+    { "type": "barge_in", "source": "ptt" },
+    { "type": "voice.mode.set", "mode": "wake_word" },
+    {
+      "type": "voice.mode",
+      "mode": "wake_word",
+      "wakeWordAvailable": true,
+      "wakeWordEnabled": true
+    },
+    { "type": "voice.devices.get" },
+    { "type": "voice.device.set", "kind": "output", "deviceId": "3" },
+    {
+      "type": "voice.devices",
+      "inputs": [{ "id": "1", "name": "USB microphone", "channels": 1, "default": true }],
+      "outputs": [{ "id": "3", "name": "Speakers", "channels": 2, "default": true }],
+      "selectedInput": "1",
+      "selectedOutput": "3"
+    },
+    {
+      "type": "module.sovereignty",
+      "sovereigntyClass": "LOCAL",
+      "observedClass": "SERVER_EGRESS",
+      "capability": "voice.model.download",
+      "capabilitySovereignty": [
+        {
+          "capability": "voice.model.download",
+          "sovereigntyClass": "SERVER_EGRESS",
+          "reason": "Observed model asset download egress."
+        }
+      ]
+    }
+  ],
+  "invalidMessages": [
+    {
+      "runtime": "policy-close",
+      "message": {
+        "type": "audio.in.begin",
+        "requestId": "bad_rate",
+        "sampleRate": 48000,
+        "channels": 1,
+        "encoding": "pcm_s16le"
+      }
+    },
+    {
+      "runtime": "policy-close",
+      "message": {
+        "type": "audio.in.begin",
+        "requestId": "bad_style",
+        "sampleRate": 16000,
+        "channels": 1,
+        "encoding": "pcm_s16le",
+        "style": "telepathy"
+      }
+    },
+    {
+      "runtime": "policy-close",
+      "message": {
+        "type": "text.compose",
+        "text": "Keep this local.",
+        "cleanup_level": "extreme"
+      }
+    },
+    {
+      "runtime": "schema-only",
+      "message": {
+        "type": "tts.audio.begin",
+        "requestId": "bad_output_metadata",
+        "sampleRate": 24000,
+        "channels": 1,
+        "encoding": "pcm_s16le",
+        "style": "formal"
+      }
+    }
+  ]
+}

@@ -1,0 +1,491 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "17 7 * * 1"
+
+env:
+  # scripts/download_models.py stages the shipped models from the Hugging Face
+  # hub cache whenever it already holds a snapshot that passes the pinned
+  # manifest check, so pointing the cache inside the workspace lets
+  # actions/cache restore it identically on every runner OS.
+  HF_HUB_CACHE: ${{ github.workspace }}/.hf-cache
+  HF_HUB_DISABLE_TELEMETRY: "1"
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+
+      # Linux needs PortAudio for sounddevice, a virtual display for the
+      # GUI-adjacent imports (pystray/pywebview), and clipboard tools for the
+      # injector paths. macOS/Windows ship the equivalents.
+      - name: Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libportaudio2 xvfb xclip \
+            gir1.2-gtk-3.0 gir1.2-ayatanaappindicator3-0.1 \
+            build-essential python3-dev pkg-config \
+            libgirepository1.0-dev libcairo2-dev
+
+      - run: uv sync --extra dev --frozen
+      - run: uv audit
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy src/dcent_voice --ignore-missing-imports --no-error-summary --show-error-codes --check-untyped-defs
+      - run: uv run python scripts/check_macos_pipeline.py
+
+      - name: Test (Linux, headless)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a uv run pytest
+
+      - name: Test
+        if: runner.os != 'Linux'
+        run: uv run pytest
+
+  # The Windows package smoke is the fresh-machine gate and runs on every push
+  # and pull request. Building an AppImage or a .app costs 60-90 minutes each,
+  # so those two run whenever the change can plausibly affect packaging or
+  # startup path resolution — and unconditionally on push, schedule and manual
+  # dispatch. GitHub has no per-job `paths:` filter, so the diff is computed
+  # here instead of through a third-party filter action.
+  changes:
+    name: Detect packaging-relevant changes
+    runs-on: ubuntu-latest
+    outputs:
+      packaging: ${{ steps.filter.outputs.packaging }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - id: filter
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" != "pull_request" ]]; then
+            echo "Not a pull request; running the native package smokes."
+            echo "packaging=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          echo "Changed files:"
+          echo "$changed"
+          if echo "$changed" | grep -Eq '^(packaging/|scripts/|\.github/workflows/ci\.yml$|src/dcent_voice/(config\.py$|util/|asr/|attach/|app\.py$|_packaged\.py$))'; then
+            echo "packaging=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "packaging=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  windows-package-smoke:
+    name: Windows package smoke
+    runs-on: windows-latest
+    timeout-minutes: 150
+    env:
+      # Never write an HKCU Run value on a shared runner image.
+      DCENT_VOICE_DISABLE_AUTOSTART: "1"
+      # WS2 makes every startup failure raise a modal MessageBoxW. A modal
+      # dialog on a headless runner hangs the step until the job timeout, so
+      # failures must go to the log and the exit code instead. Job-level so it
+      # reaches every step that runs the exe, including the doctor steps and
+      # the post-install self-check the silent installer spawns.
+      DCENT_VOICE_NO_DIALOGS: "1"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+
+      # build_installer.ps1 does a locked restore/publish of the .NET 8 setup
+      # stub; global.json pins the SDK with rollForward disabled.
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: "8.0.424"
+
+      - name: Restore pinned model snapshot cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ${{ github.workspace }}/.hf-cache
+          key: hf-models-${{ runner.os }}-${{ hashFiles('src/dcent_voice/asr/manifests/*.json') }}
+          restore-keys: |
+            hf-models-${{ runner.os }}-
+
+      - run: uv sync --extra dev --frozen
+
+      - name: Warm pinned model snapshot cache
+        shell: pwsh
+        run: |
+          uv run python scripts/qa/warm_model_cache.py
+          if ($LASTEXITCODE -ne 0) { throw "Model snapshot cache warm-up failed." }
+
+      - name: Build one-directory artifact
+        shell: pwsh
+        run: ./scripts/build_pyinstaller.ps1 -NoConfirm
+
+      # A pinned, collectable profile root keeps the app's logs where the
+      # failure-artifact step can find them. fresh_profile_smoke.py uses an
+      # already-set DCENT_VOICE_PROFILE_ROOT and creates its own temporary one
+      # otherwise, so this is an optimisation for diagnostics, not a contract
+      # the smoke depends on.
+      - name: Fresh-profile smoke (built payload, neutral cwd)
+        shell: pwsh
+        env:
+          DCENT_VOICE_PROFILE_ROOT: ${{ github.workspace }}\build\qa-profiles\built
+        run: |
+          # The smoke writes progress to stderr; keep native stderr out of
+          # PowerShell's terminating-error path while it is teed to the log.
+          $ErrorActionPreference = "Continue"
+          New-Item -ItemType Directory -Force -Path build\qa-logs | Out-Null
+          uv run python scripts/fresh_profile_smoke.py `
+            --executable dist\DCENT_Voice\dcent-voice.exe `
+            --cwd C:\ 2>&1 | Tee-Object -FilePath build\qa-logs\fresh-profile-built.log
+          $code = $LASTEXITCODE
+          $ErrorActionPreference = "Stop"
+          if ($code -ne 0) { throw "Fresh-profile smoke failed for the built payload (exit $code)." }
+
+      # scripts/qa/assert_doctor.py owns the verdict, not doctor's exit code:
+      # it validates the report against docs/schemas/doctor.schema.json and
+      # fails on any `fail` outside the explicit --allow-fail list. Windows
+      # runners need no exceptions — a missing audio device is already a warn.
+      - name: Doctor report (built payload)
+        if: hashFiles('scripts/qa/doctor-enabled') != ''
+        shell: pwsh
+        env:
+          DCENT_VOICE_NO_OPEN: "1"
+        run: |
+          $ErrorActionPreference = "Continue"
+          New-Item -ItemType Directory -Force -Path build\qa-logs | Out-Null
+          dist\DCENT_Voice\dcent-voice.exe doctor `
+            --json build\doctor-runner.json --no-launch-checks --no-zip
+          Write-Host "doctor exit: $LASTEXITCODE"
+          $ErrorActionPreference = "Stop"
+          uv run python scripts/qa/assert_doctor.py build\doctor-runner.json
+
+      - name: Build Setup.exe
+        shell: pwsh
+        run: ./scripts/build_installer.ps1
+
+      - name: Silent install
+        shell: pwsh
+        run: |
+          $setup = Resolve-Path dist\DCENT_Voice-Setup.exe
+          $process = Start-Process -FilePath $setup -ArgumentList "/S" -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Silent install exited with $($process.ExitCode)." }
+
+      - name: Assert install artefacts
+        shell: pwsh
+        run: ./scripts/qa/assert_windows_install.ps1 -Expect Installed -TimeoutSeconds 60
+
+      - name: Fresh-profile smoke (installed executable, neutral cwd)
+        shell: pwsh
+        env:
+          DCENT_VOICE_PROFILE_ROOT: ${{ github.workspace }}\build\qa-profiles\installed
+        run: |
+          $ErrorActionPreference = "Continue"
+          New-Item -ItemType Directory -Force -Path build\qa-logs | Out-Null
+          uv run python scripts/fresh_profile_smoke.py `
+            --executable "$env:LOCALAPPDATA\DCENT_Voice\dcent-voice.exe" `
+            --cwd C:\ 2>&1 | Tee-Object -FilePath build\qa-logs\fresh-profile-installed.log
+          $code = $LASTEXITCODE
+          $ErrorActionPreference = "Stop"
+          if ($code -ne 0) { throw "Fresh-profile smoke failed for the installed executable (exit $code)." }
+
+      - name: Silent uninstall
+        shell: pwsh
+        run: |
+          $setup = Resolve-Path dist\DCENT_Voice-Setup.exe
+          $process = Start-Process -FilePath $setup -ArgumentList "/uninstall", "/S" -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Silent uninstall exited with $($process.ExitCode)." }
+
+      # The stub hands removal to a detached helper, so this polls rather than
+      # asserting once (see scripts/qa/assert_windows_install.ps1).
+      - name: Assert uninstall removed everything
+        shell: pwsh
+        run: ./scripts/qa/assert_windows_install.ps1 -Expect Removed -TimeoutSeconds 180
+
+      # WS2 writes startup.log and last-startup-failure.json under
+      # <profile>\config\logs\, falling back to %TEMP%\DCENT_Voice\ when the
+      # profile directory itself cannot be created — which is exactly the class
+      # of failure worth capturing, so both locations are collected.
+      - name: Collect diagnostics
+        if: failure()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Continue"
+          function Copy-Tree($source, $label) {
+            if (-not (Test-Path -LiteralPath $source)) {
+              Write-Host "absent: $label ($source)"
+              return
+            }
+            $root = (Resolve-Path -LiteralPath $source).Path
+            $files = Get-ChildItem -LiteralPath $root -Recurse -File -ErrorAction SilentlyContinue |
+              Where-Object { $_.Extension -in ".log", ".json", ".txt" }
+            foreach ($file in $files) {
+              $relative = $file.FullName.Substring($root.Length).TrimStart('\')
+              $target = Join-Path (Join-Path "build\qa-logs" $label) $relative
+              New-Item -ItemType Directory -Force -Path (Split-Path -Parent $target) | Out-Null
+              Copy-Item -LiteralPath $file.FullName -Destination $target -Force
+            }
+            Write-Host "collected $($files.Count) file(s): $label ($root)"
+          }
+          New-Item -ItemType Directory -Force -Path build\qa-logs | Out-Null
+          Copy-Tree (Join-Path $env:APPDATA "DCENT_Voice") "appdata"
+          Copy-Tree "build\qa-profiles" "profiles"
+          Copy-Tree (Join-Path $env:TEMP "DCENT_Voice") "temp-fallback"
+          Write-Host "--- startup failure records found ---"
+          Get-ChildItem -Path build\qa-logs -Recurse -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -in "last-startup-failure.json", "startup.log" } |
+            ForEach-Object { Write-Host "  $($_.FullName)" }
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-package-smoke-diagnostics
+          path: |
+            build/doctor-runner.json
+            build/qa-logs/**
+          if-no-files-found: warn
+          retention-days: 14
+
+  linux-package-smoke:
+    name: Linux package smoke
+    needs: changes
+    if: needs.changes.outputs.packaging == 'true'
+    # Jammy's glibc 2.35 matches release.yml so the smoke exercises the same
+    # AppImage the release job produces.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    env:
+      DCENT_VOICE_DISABLE_AUTOSTART: "1"
+      # See the Windows job: WS2's fatal-error surface must not block a
+      # headless runner on a dialog.
+      DCENT_VOICE_NO_DIALOGS: "1"
+      APPIMAGE_EXTRACT_AND_RUN: "1"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+
+      - name: Restore pinned model snapshot cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ${{ github.workspace }}/.hf-cache
+          key: hf-models-${{ runner.os }}-${{ hashFiles('src/dcent_voice/asr/manifests/*.json') }}
+          restore-keys: |
+            hf-models-${{ runner.os }}-
+
+      - name: Install native Linux build and audio dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            appstream build-essential python3-dev linux-libc-dev libportaudio2 portaudio19-dev \
+            libgtk-3-0 libgtk-3-dev libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev \
+            gir1.2-webkit2-4.0 xvfb libfuse2 xclip xdotool \
+            libgirepository1.0-dev libcairo2-dev pkg-config libx11-6 libxtst6
+
+      - name: Install AppImage build tool
+        shell: bash
+        run: |
+          curl --fail --location --retry 3 \
+            https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage \
+            --output "$RUNNER_TEMP/appimagetool-x86_64.AppImage"
+          echo "ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0  $RUNNER_TEMP/appimagetool-x86_64.AppImage" \
+            | sha256sum --check --strict
+          chmod 0755 "$RUNNER_TEMP/appimagetool-x86_64.AppImage"
+          curl --fail --location --retry 3 \
+            https://github.com/AppImage/type2-runtime/releases/download/continuous/runtime-x86_64 \
+            --output "$RUNNER_TEMP/runtime-x86_64"
+          test "$(stat --format=%s "$RUNNER_TEMP/runtime-x86_64")" -eq 944632
+          echo "1cc49bcf1e2ccd593c379adb17c9f85a36d619088296504de95b1d06215aebbf  $RUNNER_TEMP/runtime-x86_64" \
+            | sha256sum --check --strict
+
+      - run: uv sync --extra dev --frozen
+
+      - name: Warm pinned model snapshot cache
+        shell: bash
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: uv run python scripts/qa/warm_model_cache.py
+
+      - name: Build native payload and AppImage
+        shell: bash
+        env:
+          APPIMAGETOOL: ${{ runner.temp }}/appimagetool-x86_64.AppImage
+          APPIMAGE_RUNTIME_FILE: ${{ runner.temp }}/runtime-x86_64
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: bash scripts/build_linux_appimage.sh
+
+      - name: Fresh-profile smoke (AppImage, neutral cwd)
+        shell: bash
+        env:
+          XDG_CONFIG_HOME: ${{ github.workspace }}/build/qa-profiles/xdg-config
+          XDG_DATA_HOME: ${{ github.workspace }}/build/qa-profiles/xdg-data
+          XDG_STATE_HOME: ${{ github.workspace }}/build/qa-profiles/xdg-state
+          DCENT_VOICE_PROFILE_ROOT: ${{ github.workspace }}/build/qa-profiles/appimage
+        run: |
+          set -euo pipefail
+          mkdir -p build/qa-logs "$XDG_CONFIG_HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME"
+          appimage="$(find dist -maxdepth 1 -name 'DCENT_Voice-linux-*.AppImage' -print -quit)"
+          test -n "$appimage" || { echo "No AppImage was produced." >&2; exit 1; }
+          xvfb-run -a uv run python scripts/fresh_profile_smoke.py \
+            --executable "$(readlink -f "$appimage")" \
+            --cwd / 2>&1 | tee build/qa-logs/fresh-profile-appimage.log
+
+      # AC4 is "doctor works" on all three platforms. WS9's desktop.* checks
+      # only run here, so this is the only job that exercises them. xdotool is
+      # in the apt list above precisely so desktop.injection_tools passes: under
+      # xvfb the session reads as x11, whose helper set is xclip + xdotool.
+      - name: Doctor report (AppImage)
+        if: hashFiles('scripts/qa/doctor-enabled') != ''
+        shell: bash
+        env:
+          DCENT_VOICE_NO_OPEN: "1"
+          XDG_CONFIG_HOME: ${{ github.workspace }}/build/qa-profiles/xdg-config
+          DCENT_VOICE_PROFILE_ROOT: ${{ github.workspace }}/build/qa-profiles/doctor
+        run: |
+          set -uo pipefail
+          mkdir -p build/qa-logs "$DCENT_VOICE_PROFILE_ROOT"
+          appimage="$(find dist -maxdepth 1 -name 'DCENT_Voice-linux-*.AppImage' -print -quit)"
+          xvfb-run -a "$(readlink -f "$appimage")" doctor \
+            --json build/qa-logs/doctor-linux.json --no-launch-checks --no-zip
+          echo "doctor exit: $?"
+          set -e
+          uv run python scripts/qa/assert_doctor.py build/qa-logs/doctor-linux.json
+
+      # WS2 writes startup.log and last-startup-failure.json under
+      # <profile>/config/logs/, falling back to $TMPDIR/DCENT_Voice/ when the
+      # profile directory cannot be created.
+      - name: Collect diagnostics
+        if: failure()
+        shell: bash
+        run: bash scripts/qa/collect_diagnostics.sh
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: linux-package-smoke-diagnostics
+          path: build/qa-logs/**
+          if-no-files-found: warn
+          retention-days: 14
+
+  macos-package-smoke:
+    name: macOS package smoke
+    needs: changes
+    if: needs.changes.outputs.packaging == 'true'
+    runs-on: macos-14
+    timeout-minutes: 120
+    env:
+      DCENT_VOICE_DISABLE_AUTOSTART: "1"
+      # See the Windows job: WS2's fatal-error surface must not block a
+      # headless runner on a dialog.
+      DCENT_VOICE_NO_DIALOGS: "1"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+
+      - name: Restore pinned model snapshot cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ${{ github.workspace }}/.hf-cache
+          key: hf-models-${{ runner.os }}-${{ hashFiles('src/dcent_voice/asr/manifests/*.json') }}
+          restore-keys: |
+            hf-models-${{ runner.os }}-
+
+      - run: uv sync --extra dev --frozen
+
+      - name: Warm pinned model snapshot cache
+        shell: bash
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: uv run python scripts/qa/warm_model_cache.py
+
+      # No signing or notarization credentials in CI: build_macos_app.sh emits
+      # an unsigned bundle and records that in dist/macos-pipeline-status.json.
+      # release.yml is the job that fails closed on missing credentials.
+      - name: Build native payload and .app
+        shell: bash
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: bash scripts/build_macos_app.sh
+
+      - name: Fresh-profile smoke (.app, neutral cwd)
+        shell: bash
+        env:
+          DCENT_VOICE_PROFILE_ROOT: ${{ github.workspace }}/build/qa-profiles/macos-app
+        run: |
+          set -euo pipefail
+          mkdir -p build/qa-logs "$RUNNER_TEMP/qa-home"
+          # The .app resolves its profile from HOME, so the smoke must not run
+          # under the runner's real home. `uv run` would re-resolve its cache
+          # under the fake HOME, so call the synced interpreter directly.
+          HOME="$RUNNER_TEMP/qa-home" ./.venv/bin/python scripts/fresh_profile_smoke.py \
+            --executable "$GITHUB_WORKSPACE/dist/DCENT Voice.app/Contents/MacOS/dcent-voice" \
+            --cwd / 2>&1 | tee build/qa-logs/fresh-profile-macos-app.log
+
+      # A headless macos-14 runner can never hold the Accessibility TCC grant,
+      # and there is no microphone to authorize, so WS9's two TCC checks are
+      # allowed to fail *here specifically*. Every other check, including the
+      # rest of desktop.*, still gates the job. assert_doctor.py reports if an
+      # allowed id stops failing, so these exceptions cannot go stale silently.
+      - name: Doctor report (.app)
+        if: hashFiles('scripts/qa/doctor-enabled') != ''
+        shell: bash
+        env:
+          DCENT_VOICE_NO_OPEN: "1"
+          DCENT_VOICE_PROFILE_ROOT: ${{ github.workspace }}/build/qa-profiles/doctor
+        run: |
+          set -uo pipefail
+          mkdir -p build/qa-logs "$DCENT_VOICE_PROFILE_ROOT" "$RUNNER_TEMP/qa-home"
+          HOME="$RUNNER_TEMP/qa-home" \
+            "$GITHUB_WORKSPACE/dist/DCENT Voice.app/Contents/MacOS/dcent-voice" doctor \
+            --json build/qa-logs/doctor-macos.json --no-launch-checks --no-zip
+          echo "doctor exit: $?"
+          set -e
+          uv run python scripts/qa/assert_doctor.py build/qa-logs/doctor-macos.json \
+            --allow-fail desktop.accessibility \
+            --allow-fail desktop.microphone
+
+      - name: Collect diagnostics
+        if: failure()
+        shell: bash
+        env:
+          # The smoke ran under a fake HOME; WS2's Application Support logs and
+          # the $TMPDIR fallback both live under it.
+          DCENT_QA_EXTRA_ROOTS: ${{ runner.temp }}/qa-home
+        run: bash scripts/qa/collect_diagnostics.sh
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: macos-package-smoke-diagnostics
+          path: build/qa-logs/**
+          if-no-files-found: warn
+          retention-days: 14

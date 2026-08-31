@@ -1,0 +1,17 @@
+Microsoft Visual C++ and Universal C Runtime redistribution notice
+=================================================================
+
+DCENT_Voice Windows artifacts redistribute only the Microsoft runtime DLLs
+listed and SHA-256-bound in THIRD-PARTY-SBOM.cdx.json. These are proprietary
+Microsoft redistributables, not software covered by the DCENT_Voice MIT
+license. Their redistribution and use are governed by the Microsoft Visual
+C++ Runtime 2015-2022 terms:
+
+https://visualstudio.microsoft.com/license-terms/vs2022-cruntime/
+
+Microsoft's official Visual Studio redistribution documentation identifies
+the Visual C++ runtime files as redistributable subject to those license terms:
+
+https://learn.microsoft.com/visualstudio/releases/2022/redistribution
+
+Copyright (c) Microsoft Corporation. All rights reserved.

@@ -1,0 +1,22 @@
+<!doctype html>
+<!-- DCENT_Voice — open-source, local-first voice dictation
+     Copyright (c) 2026 D-Central Technologies — decentralized technologies for digital sovereignty
+     SPDX-License-Identifier: MIT -->
+<meta charset="utf-8">
+<title>Incident report</title>
+<style>
+html,body{margin:0;min-height:100%;background:#f7f8fa;color:#1b1f24;font:15px/1.4 system-ui,sans-serif}
+#masthead{padding:16px 20px;border-bottom:1px solid #d0d7de;background:#fff}
+form{padding:20px 24px 24px}
+label{display:block;margin:14px 0 6px;font-weight:600}
+input[name=title]{width:100%;box-sizing:border-box;padding:8px 10px}
+textarea[name=body]{width:100%;height:58vh;box-sizing:border-box;padding:12px;
+font:16px/1.45 ui-sans-serif,sans-serif;resize:vertical}
+</style>
+<header id="masthead">Engineering incident report</header>
+<form>
+  <label for="report-title">Title</label>
+  <input id="report-title" name="title" value="Standup notes">
+  <label for="meeting-body">Meeting notes</label>
+  <textarea id="meeting-body" name="body" aria-label="Meeting notes">Existing form notes</textarea>
+</form>
