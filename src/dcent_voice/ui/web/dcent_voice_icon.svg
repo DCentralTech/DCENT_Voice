@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="dcent-voice-icon" xmlns="http://www.w3.org/2000/svg" width="512" height="256" viewBox="96 42 448 184" role="img" aria-labelledby="title desc">
+  <title id="title">DCENT_Voice voice waveform icon</title>
+  <desc id="desc">A glowing orange audio waveform at the centre with three glossy particles orbiting around it.</desc>
+  <defs>
+    <style><![CDATA[
+      #dcent-voice-icon { --voice-pulse: 1; }
+      #voice-wave, #voice-wave-glow { transform-box: view-box; transform-origin: 320px 130px; }
+      #center-node, #left-node, #right-node { transform-box: view-box; }
+
+      /* Waveform: the still centre of gravity — it never rotates. Its height and
+         glow track live mic amplitude (--voice-pulse, pushed every frame). */
+      #dcent-voice-icon.is-active #voice-wave,
+      #dcent-voice-icon.is-listening #voice-wave { transform: scaleY(calc(0.28 + var(--voice-pulse) * 1.35)); }
+      #dcent-voice-icon.is-active #voice-wave-glow,
+      #dcent-voice-icon.is-listening #voice-wave-glow { transform: scaleY(calc(0.28 + var(--voice-pulse) * 1.35)); opacity: calc(0.22 + var(--voice-pulse) * 0.62); }
+      #dcent-voice-icon.is-processing #voice-wave { stroke-dasharray: 36 18; animation: dcentVoiceDash 720ms linear infinite; }
+
+      /* All three particles orbit the waveform in slow elliptical paths with
+         front-to-back depth (opacity). The heavy core takes a wide, shallow,
+         slow orbit; the two lighter particles sweep wider and faster — gravity
+         around the sound, with nothing sitting still on the wave. */
+      #center-node { animation: dcentOrbitCore 14s linear infinite; }
+      #left-node { animation: dcentOrbitP1 11s linear infinite; }
+      #right-node { animation: dcentOrbitP2 9.5s linear infinite; }
+
+      @keyframes dcentOrbitCore {
+      0%{transform:translate(0.0px,30.0px);opacity:1.000;}
+      5%{transform:translate(-30.9px,28.6px);opacity:0.995;}
+      10%{transform:translate(-58.8px,24.7px);opacity:0.979;}
+      15%{transform:translate(-80.9px,18.5px);opacity:0.955;}
+      20%{transform:translate(-95.1px,10.7px);opacity:0.924;}
+      25%{transform:translate(-100.0px,2.0px);opacity:0.890;}
+      30%{transform:translate(-95.1px,-6.7px);opacity:0.856;}
+      35%{transform:translate(-80.9px,-14.5px);opacity:0.825;}
+      40%{transform:translate(-58.8px,-20.7px);opacity:0.801;}
+      45%{transform:translate(-30.9px,-24.6px);opacity:0.785;}
+      50%{transform:translate(0.0px,-26.0px);opacity:0.780;}
+      55%{transform:translate(30.9px,-24.6px);opacity:0.785;}
+      60%{transform:translate(58.8px,-20.7px);opacity:0.801;}
+      65%{transform:translate(80.9px,-14.5px);opacity:0.825;}
+      70%{transform:translate(95.1px,-6.7px);opacity:0.856;}
+      75%{transform:translate(100.0px,2.0px);opacity:0.890;}
+      80%{transform:translate(95.1px,10.7px);opacity:0.924;}
+      85%{transform:translate(80.9px,18.5px);opacity:0.955;}
+      90%{transform:translate(58.8px,24.7px);opacity:0.979;}
+      95%{transform:translate(30.9px,28.6px);opacity:0.995;}
+      100%{transform:translate(0.0px,30.0px);opacity:1.000;}
+      }
+      @keyframes dcentOrbitP1 {
+      0%{transform:translate(22.8px,-22.0px);opacity:0.625;}
+      5%{transform:translate(50.3px,-33.7px);opacity:0.564;}
+      10%{transform:translate(87.1px,-41.9px);opacity:0.522;}
+      15%{transform:translate(129.4px,-45.7px);opacity:0.501;}
+      20%{transform:translate(173.1px,-45.0px);opacity:0.505;}
+      25%{transform:translate(214.0px,-39.6px);opacity:0.533;}
+      30%{transform:translate(248.0px,-30.1px);opacity:0.583;}
+      35%{transform:translate(271.9px,-17.5px);opacity:0.648;}
+      40%{transform:translate(283.2px,-3.0px);opacity:0.724;}
+      45%{transform:translate(280.9px,12.0px);opacity:0.802;}
+      50%{transform:translate(265.2px,26.0px);opacity:0.875;}
+      55%{transform:translate(237.7px,37.7px);opacity:0.936;}
+      60%{transform:translate(200.9px,45.9px);opacity:0.978;}
+      65%{transform:translate(158.6px,49.7px);opacity:0.999;}
+      70%{transform:translate(114.9px,49.0px);opacity:0.995;}
+      75%{transform:translate(74.0px,43.6px);opacity:0.967;}
+      80%{transform:translate(40.0px,34.1px);opacity:0.917;}
+      85%{transform:translate(16.1px,21.5px);opacity:0.852;}
+      90%{transform:translate(4.8px,7.0px);opacity:0.776;}
+      95%{transform:translate(7.1px,-8.0px);opacity:0.698;}
+      100%{transform:translate(22.8px,-22.0px);opacity:0.625;}
+      }
+      @keyframes dcentOrbitP2 {
+      0%{transform:translate(-22.8px,-22.0px);opacity:0.625;}
+      5%{transform:translate(-7.1px,-8.0px);opacity:0.698;}
+      10%{transform:translate(-4.8px,7.0px);opacity:0.776;}
+      15%{transform:translate(-16.1px,21.5px);opacity:0.852;}
+      20%{transform:translate(-40.0px,34.1px);opacity:0.917;}
+      25%{transform:translate(-74.0px,43.6px);opacity:0.967;}
+      30%{transform:translate(-114.9px,49.0px);opacity:0.995;}
+      35%{transform:translate(-158.6px,49.7px);opacity:0.999;}
+      40%{transform:translate(-200.9px,45.9px);opacity:0.978;}
+      45%{transform:translate(-237.7px,37.7px);opacity:0.936;}
+      50%{transform:translate(-265.2px,26.0px);opacity:0.875;}
+      55%{transform:translate(-280.9px,12.0px);opacity:0.802;}
+      60%{transform:translate(-283.2px,-3.0px);opacity:0.724;}
+      65%{transform:translate(-271.9px,-17.5px);opacity:0.648;}
+      70%{transform:translate(-248.0px,-30.1px);opacity:0.583;}
+      75%{transform:translate(-214.0px,-39.6px);opacity:0.533;}
+      80%{transform:translate(-173.1px,-45.0px);opacity:0.505;}
+      85%{transform:translate(-129.4px,-45.7px);opacity:0.501;}
+      90%{transform:translate(-87.1px,-41.9px);opacity:0.522;}
+      95%{transform:translate(-50.3px,-33.7px);opacity:0.564;}
+      100%{transform:translate(-22.8px,-22.0px);opacity:0.625;}
+      }
+      @keyframes dcentVoiceDash { to { stroke-dashoffset: -54; } }
+      @media (prefers-reduced-motion: reduce) {
+        #dcent-voice-icon * { animation: none !important; }
+        #dcent-voice-icon #voice-wave, #dcent-voice-icon #voice-wave-glow { transform: scaleY(1); }
+        #center-node, #left-node, #right-node { transform: none; opacity: 1; }
+      }
+    ]]></style>
+    <radialGradient id="orangeSphere" cx="33%" cy="24%" r="78%"><stop offset="0%" stop-color="#FFF2A6"/><stop offset="18%" stop-color="#FFC24A"/><stop offset="48%" stop-color="#F7931A"/><stop offset="78%" stop-color="#D96500"/><stop offset="100%" stop-color="#A94100"/></radialGradient>
+    <radialGradient id="orangeSphereSmall" cx="32%" cy="24%" r="80%"><stop offset="0%" stop-color="#FFF0A0"/><stop offset="20%" stop-color="#FFBA37"/><stop offset="52%" stop-color="#F7931A"/><stop offset="82%" stop-color="#D45B00"/><stop offset="100%" stop-color="#9A3900"/></radialGradient>
+    <radialGradient id="highlight" cx="45%" cy="42%" r="55%"><stop offset="0%" stop-color="#FFFFFF" stop-opacity=".95"/><stop offset="55%" stop-color="#FFFFFF" stop-opacity=".42"/><stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+    <linearGradient id="waveGradient" x1="145" y1="120" x2="495" y2="120" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#FF8A00"/><stop offset="26%" stop-color="#FFD24A"/><stop offset="52%" stop-color="#FFF06C"/><stop offset="76%" stop-color="#FFB329"/><stop offset="100%" stop-color="#FF7A00"/></linearGradient>
+    <linearGradient id="bondGradient" x1="125" y1="105" x2="515" y2="145" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#171311"/><stop offset="52%" stop-color="#2C2724"/><stop offset="100%" stop-color="#171311"/></linearGradient>
+    <filter id="sphereShadow" x="-45%" y="-45%" width="190%" height="190%"><feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#7B2A00" flood-opacity=".28"/><feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#FF8A00" flood-opacity=".25"/></filter>
+    <filter id="sphereHotShadow" x="-55%" y="-55%" width="210%" height="210%"><feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#7B2A00" flood-opacity=".36"/><feDropShadow dx="0" dy="0" stdDeviation="12" flood-color="#FF9E14" flood-opacity=".62"/></filter>
+    <filter id="waveGlow" x="-30%" y="-120%" width="160%" height="340%"><feGaussianBlur stdDeviation="3" result="blur"/><feColorMatrix in="blur" type="matrix" values="1 0 0 0 1  0 .68 0 0 .42  0 0 .05 0 0  0 0 0 .78 0" result="glow"/><feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="hotWaveGlow" x="-40%" y="-150%" width="180%" height="400%"><feGaussianBlur stdDeviation="6" result="blur"/><feColorMatrix in="blur" type="matrix" values="1 0 0 0 1  0 .74 0 0 .54  0 0 .08 0 0  0 0 0 .95 0" result="glow"/><feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <g id="molecule-stage" fill="none">
+    <g id="left-node" class="sphere"><circle cx="176" cy="128" r="39" fill="url(#orangeSphereSmall)" filter="url(#sphereShadow)"/><ellipse cx="160" cy="106" rx="13" ry="8" fill="url(#highlight)" transform="rotate(-26 160 106)"/><path d="M146 127 A30 30 0 0 1 179 96" stroke="#FFC36A" stroke-width="2" stroke-linecap="round" opacity=".46"/></g>
+    <g id="right-node" class="sphere"><circle cx="464" cy="128" r="39" fill="url(#orangeSphereSmall)" filter="url(#sphereShadow)"/><ellipse cx="449" cy="106" rx="13" ry="8" fill="url(#highlight)" transform="rotate(-26 449 106)"/><path d="M434 127 A30 30 0 0 1 466 96" stroke="#FFC36A" stroke-width="2" stroke-linecap="round" opacity=".46"/></g>
+    <g id="center-node" class="sphere"><circle cx="320" cy="128" r="61" fill="url(#orangeSphere)" filter="url(#sphereShadow)"/><ellipse cx="295" cy="91" rx="22" ry="13" fill="url(#highlight)" transform="rotate(-24 295 91)"/><path d="M274 126 A47 47 0 0 1 323 80" stroke="#FFD06E" stroke-width="2.5" stroke-linecap="round" opacity=".45"/><circle cx="345" cy="91" r="7" fill="#FFFFFF" opacity=".52"/></g>
+    <path id="voice-wave-glow" d="M190 128 C209 126 221 128 234 127 L248 127 L255 109 L267 151 L281 84 L296 175 L314 74 L333 164 L347 100 L359 145 L371 116 L383 134 C396 126 413 128 430 128 C441 128 451 127 462 128" stroke="#FF9A00" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" opacity=".42" filter="url(#waveGlow)"/>
+    <path id="voice-wave" d="M190 128 C209 126 221 128 234 127 L248 127 L255 109 L267 151 L281 84 L296 175 L314 74 L333 164 L347 100 L359 145 L371 116 L383 134 C396 126 413 128 430 128 C441 128 451 127 462 128" stroke="url(#waveGradient)" stroke-width="6.8" stroke-linecap="round" stroke-linejoin="round" filter="url(#waveGlow)"/>
+  </g>
+</svg>

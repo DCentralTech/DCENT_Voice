@@ -1,0 +1,35 @@
+#!/bin/sh
+set -eu
+
+case "${1:-}" in
+  configure)
+    payload=/opt/dcent-voice
+    if [ -L "$payload" ] || [ ! -d "$payload" ]; then
+      echo "dcent-voice: refusing unsafe payload root: $payload" >&2
+      exit 1
+    fi
+    # Respect an explicit administrator override. Older DCENT Voice packages
+    # accidentally installed this one package-owned directory as 0700, and
+    # dpkg preserves that existing directory mode during replacement.
+    if ! dpkg-statoverride --list "$payload" >/dev/null 2>&1; then
+      chmod 0755 "$payload"
+    fi
+    wayland_ready=false
+    x11_ready=false
+    if command -v wl-copy >/dev/null 2>&1 &&
+       { command -v wtype >/dev/null 2>&1 || command -v ydotool >/dev/null 2>&1; }; then
+      wayland_ready=true
+    fi
+    if { command -v xclip >/dev/null 2>&1 || command -v xsel >/dev/null 2>&1; } &&
+       command -v xdotool >/dev/null 2>&1; then
+      x11_ready=true
+    fi
+    if [ "$wayland_ready" != true ] && [ "$x11_ready" != true ]; then
+      echo "dcent-voice: clipboard injection helpers are not ready." >&2
+      echo "  Wayland: install wl-clipboard and wtype (or ydotool)." >&2
+      echo "  X11: install xclip (or xsel) and xdotool." >&2
+    fi
+    ;;
+esac
+
+exit 0

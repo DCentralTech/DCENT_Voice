@@ -1,0 +1,11 @@
+Package: dcent-voice
+Version: 0.2.0b1
+Section: sound
+Priority: optional
+Architecture: amd64
+Depends: libportaudio2, libgtk-3-0, libwebkit2gtk-4.1-0 | libwebkit2gtk-4.0-37, libx11-6, libxtst6
+Recommends: wl-clipboard, wtype | ydotool, xclip | xsel, xdotool
+Maintainer: D-Central Technologies <support@d-central.tech>
+Description: Local-first voice dictation
+ Hold a hotkey, speak, release. Transcription stays on this machine.
+ No account is required for core dictation.

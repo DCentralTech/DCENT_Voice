@@ -1,0 +1,261 @@
+config_version = 2
+active_profile = "desktop"
+# First-class language mode: "english", "multilingual" (More languages), or "auto".
+# Settings shows human names (French, German…), not model IDs. English stays on
+# the fast local Parakeet. The same-size model covers its 25-language set.
+# Japanese / Chinese / Korean / Arabic / Hindi use local Whisper base — never large-v3.
+language_mode = "english"
+# ISO code or "auto". Used when language_mode is multilingual. English mode ignores this.
+language = "en"
+
+# DCENT_Voice works fully standalone: local Parakeet ONNX transcription runs on
+# this machine and needs nothing else installed or running. The optional AI cleanup
+# pass (punctuation, capitalization, filler removal) is OFF by default. To turn
+# it on, point a profile's `llm` at a local model (e.g. "ollama:qwen2.5:7b" or
+# "lmstudio:<model>") and set that profile's `cleanup_enabled = true`. If the
+# LLM ever isn't running, dictation still works — you just get the raw
+# transcript instead of the polished one.
+cleanup_enabled = false
+launch_at_startup = false
+# Release local ASR RAM after this many idle seconds. 0 keeps the model warm
+# (~777 MB). Default 600: session dictation stays ~0.2s; all-day tray drops
+# toward shell RSS. Next hold shows Loading (~4s) instead of a silent stall.
+idle_unload_s = 600
+
+[hotkeys]
+mode = "hold"
+# Default surface is one key: hold, speak, release. Optional chords stay off
+# until you want Command or Live Dictation.
+dictation = "ctrl+win"
+command = "off"
+streaming = "off"
+
+# Local writing style. Deterministic. No LLM. Config per-app overrides win.
+# Learned destination styles are optional and local; see [personalization].
+# plain | email | chat | code | formal | notes
+[style]
+default = "plain"
+# [style.per_app] overrides built-in destination routing (Settings → Destination styles by app).
+# "outlook.exe" = "email"
+# "Notion.exe" = "notes"
+# "Code.exe" = "code"
+
+# Microphone selection. Omit (or leave "") to use the system default input.
+# Use a sounddevice index (int) or a name substring (string); list devices with
+# `python scripts/scan_mics.py` or pick one in the setup wizard (--setup).
+[audio]
+input_device = ""
+# Ring-buffer capacity (seconds). Keep >= auto_stop_seconds so long holds never
+# silently drop the start of the utterance.
+max_seconds = 90
+# Soft stop while push-to-talk is held: finalize and inject instead of recording
+# forever. Hotkey stuck-safety is slightly longer than this.
+auto_stop_seconds = 60
+
+[overlay]
+enabled = true
+lazy = true             # saves ~300 MB on Windows until the first dictation
+position = "bottom-center"
+reduced_motion = false
+
+[service]
+enabled = true
+host = "127.0.0.1"
+port = 8765
+
+[injector]
+default = "clipboard"
+restore_clipboard = true
+# Maximum wait after Ctrl+V before restoring the previous clipboard.
+# Local apps typically consume paste in well under 100 ms. Raise this for
+# slow remote/Electron targets, or disable restoration if a target races.
+paste_delay_s = 0.10
+paste_min_delay_s = 0.04
+# Short utterances type as keystrokes and skip the clipboard wait entirely.
+# Per-app overrides still win. 0 disables.
+short_text_keystroke_chars = 48
+
+# Terminal/console apps run raw-mode TUIs where a synthesized Ctrl+V is
+# delivered to the app as a literal control byte instead of pasting, so
+# clipboard injection silently no-ops there. Route them to keystroke typing,
+# which the console reads as real typed input.
+[injector.per_app]
+"WindowsTerminal.exe" = "keystroke"
+"cmd.exe" = "keystroke"
+"powershell.exe" = "keystroke"
+"pwsh.exe" = "keystroke"
+"conhost.exe" = "keystroke"
+"OpenConsole.exe" = "keystroke"
+"alacritty.exe" = "keystroke"
+"WezTerm.exe" = "keystroke"
+
+[privacy]
+first_run_education_shown = false
+consent_ledger_path = ""
+egress_log_path = ""
+
+# Failed-dictation recovery is OFF by default. When explicitly enabled, only
+# usable text that could not be inserted is retained locally; successful
+# dictation and microphone audio are never stored. Disabling purges the vault.
+[recovery]
+enabled = false
+max_items = 10
+max_age_hours = 24
+
+# Local text-to-speech (Wave E1) is a source-preview feature. OFF by default:
+# model files are not bundled and are downloaded only after you approve them in
+# Settings -> Models (a SERVER_EGRESS action recorded in the privacy ledger).
+# The Windows public-beta bundle intentionally omits optional TTS runtimes while
+# license compatibility is reviewed. With no runtime/models, DCENT_Voice
+# advertises no TTS to ADE. XTTS is not supported.
+# `backend`: "kokoro" | "auto" (both select Kokoro). Legacy "piper" config
+# values still parse but are deferred from this public beta pending compatible
+# voice licensing.
+# `mic_policy` is the half-duplex barge-in rule while TTS plays on the speakers:
+# "pause" suspends the mic, "duck" lowers its gain to `duck_gain`, "off" disables
+# the coupling. A push-to-talk press always cancels playback.
+[tts]
+enabled = false
+backend = "kokoro"
+voice = "af_heart"
+mic_policy = "pause"
+duck_gain = 0.2
+skip_code = true
+
+# Each profile picks a transcription engine (`asr`) and optional AI cleanup
+# (`llm` + `cleanup_enabled`). Desktop default is local Parakeet ONNX.
+# Faster-whisper profiles use a compute suffix:
+#   :cpu-int8   — Whisper CPU path / fallback
+#   no suffix / auto — CUDA when the full stack is ready, else CPU int8
+#   :cuda-float16 — force GPU (needs CUDA + cuDNN 8 on PATH)
+# Privacy is identical across every local profile — nothing leaves this machine.
+
+# Default: NVIDIA Parakeet TDT 0.6B v3 on CPU ONNX. Setup.exe stages the
+# weights. If onnx-asr is missing, the engine falls back to faster-whisper.
+[profile.desktop]
+asr = "parakeet:tdt-0.6b-v3:int8"
+llm = "none"
+cleanup_enabled = false
+
+# Prefer a working NVIDIA stack when CUDA/cuDNN are ready; otherwise CPU int8.
+# On GPU this is the sweet spot; on pure CPU, desktop (base.en) is snappier.
+[profile.auto]
+asr = "faster-whisper:distil-small.en"
+llm = "none"
+cleanup_enabled = false
+
+# Higher-quality local model on CPU. Expect ~1.5–2 s short-utterance finalize
+# on mid-range CPUs — use when accuracy matters more than sub-second feel.
+[profile.quality]
+asr = "faster-whisper:distil-small.en:cpu-int8"
+llm = "none"
+cleanup_enabled = false
+
+# Accuracy-first. Heavier; fine on strong CPUs with patience, or on CUDA GPU.
+[profile.accurate]
+asr = "faster-whisper:large-v3:cpu-int8"
+llm = "none"
+cleanup_enabled = false
+
+# Force CUDA when you know the GPU stack is complete (see scripts/check_env.py).
+[profile.gpu]
+asr = "faster-whisper:distil-small.en:cuda-float16"
+llm = "none"
+cleanup_enabled = false
+
+# Lightest CPU profile for older laptops or quick smoke tests.
+[profile.tiny]
+asr = "faster-whisper:tiny.en:cpu-int8"
+llm = "none"
+cleanup_enabled = false
+
+# Optional whisper.cpp backend (install the whispercpp extra). Same model class
+# as desktop; used for the local engine tournament, not the shipped default.
+[profile.whispercpp]
+asr = "whisper-cpp:base.en"
+llm = "none"
+cleanup_enabled = false
+
+# Same engine as desktop. Kept as an explicit named profile.
+[profile.parakeet]
+asr = "parakeet:tdt-0.6b-v3:int8"
+llm = "none"
+cleanup_enabled = false
+language = "auto"
+
+# Optional AI cleanup via a local LLM (Ollama / LM Studio). Still fully local.
+[profile.laptop]
+asr = "faster-whisper:base.en:cpu-int8"
+llm = "ollama:qwen2.5:3b"
+cleanup_enabled = true
+
+[profile.cloud]
+# Requires the optional cloud provider dependencies: `pip install ".[cloud]"`.
+asr = "deepgram:nova-3"
+llm = "none"
+cleanup_enabled = false
+
+[[dictionary.terms]]
+spoken = "d central"
+written = "D-Central"
+
+[[dictionary.terms]]
+spoken = "decentral"
+written = "D-Central"
+
+[[dictionary.terms]]
+spoken = "decent voice"
+written = "DCENT_Voice"
+
+[[dictionary.terms]]
+spoken = "p test"
+written = "pytest"
+
+[[dictionary.terms]]
+spoken = "d cent voice"
+written = "DCENT_Voice"
+
+[[dictionary.terms]]
+spoken = "lightning network"
+written = "Lightning Network"
+
+[[dictionary.terms]]
+spoken = "bitcoin core"
+written = "Bitcoin Core"
+
+# Offline post-ASR transforms (no network, no LLM). On by default so ramble
+# becomes sendable writing without optional AI cleanup.
+[dictation]
+local_polish = true       # fillers, false starts, "5 actually 6", caps, punctuation
+spoken_edits = true       # "scratch that", "new line", "comma", bullets, …
+developer_terms = true    # "dot py" → .py, common CLI / path forms
+cleanup_level = "medium"  # none | light | medium | high. High = local hedges only, not cloud rewrite. Default medium. No LLM. Settings: General → Auto Cleanup.
+
+# Local correction memory. Only explicit spoken/typed corrections grow this
+# bounded, inspectable store; passive transcripts and audio are never saved.
+# Inspect or reset from Settings → Dictionary.
+[personalization]
+enabled = true
+learn = true
+# Explicitly allow longer learned rewrites in trusted prose dictation.
+# False keeps only whole-utterance learned corrections.
+prose_context = false
+# Destination styles learned in an app (Settings, ADE, or
+# `dcent-voice learn --style email --app notepad.exe`) stay in
+# personalization.json. No audio. Inspect or reset anytime. They sit
+# below [style.per_app] and window-title maps, and above built-in defaults.
+
+# Same-size multilingual sibling of desktop. Use Settings → Language = Multilingual
+# or this profile. Does not load large-v3.
+[profile.multilingual]
+asr = "faster-whisper:base:cpu-int8"
+llm = "none"
+cleanup_enabled = false
+language = "auto"
+
+# Voice snippets: say the cue, get the expansion (multi-line allowed).
+# Missing [snippets] shows first-run starter cues in Settings.
+# items = [] means the user deleted them; they stay gone.
+# [[snippets.items]]
+# spoken = "my calendar"
+# expansion = "https://cal.example/me"

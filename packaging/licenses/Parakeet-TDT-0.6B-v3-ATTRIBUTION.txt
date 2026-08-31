@@ -1,0 +1,13 @@
+NVIDIA Parakeet TDT 0.6B v3 (multilingual speech recognition model)
+
+Original model: NVIDIA Corporation
+https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3
+
+ONNX conversion and quantized redistribution: Ivan Stupakov
+https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx
+Pinned redistributed revision: 8f23f0c03c8761650bdb5b40aaf3e40d2c15f1ce
+
+The pinned model repository declares CC-BY-4.0. DCENT_Voice redistributes the
+model without modifying its vocabulary/configuration and uses the repository's
+published INT8 ONNX conversion. The full Creative Commons Attribution 4.0
+International license is included as CC-BY-4.0.txt.

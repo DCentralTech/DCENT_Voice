@@ -1,0 +1,25 @@
+<!doctype html>
+<!-- DCENT_Voice — open-source, local-first voice dictation
+     Copyright (c) 2026 D-Central Technologies — decentralized technologies for digital sovereignty
+     SPDX-License-Identifier: MIT -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Settings Modes preview</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #0d0d0d; }
+      iframe { border: 0; width: 100%; height: 100%; }
+    </style>
+  </head>
+  <body>
+    <iframe id="frame" src="../../src/dcent_voice/ui/web/settings/index.html" title="Settings"></iframe>
+    <script>
+      const frame = document.getElementById("frame");
+      frame.addEventListener("load", () => {
+        const doc = frame.contentDocument;
+        const tab = doc.getElementById("tab-modes");
+        if (tab) tab.click();
+      });
+    </script>
+  </body>
+</html>

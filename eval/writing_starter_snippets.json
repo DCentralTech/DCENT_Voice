@@ -1,0 +1,33 @@
+{
+  "schema": "dcent-writing-eval-v1",
+  "description": "Empty starter snippet cues stay spoken text. Filled expansions replace the cue. Not cloud-synced snippets.",
+  "items": [
+    {
+      "id": "empty-my-email-inert",
+      "kind": "compose",
+      "style": "plain",
+      "snippets": [{"spoken": "my email", "expansion": ""}],
+      "input": "send it to my email please",
+      "must_contain": ["my email"],
+      "must_not_contain": ["@"]
+    },
+    {
+      "id": "filled-my-calendar-expands",
+      "kind": "compose",
+      "style": "plain",
+      "snippets": [{"spoken": "my calendar", "expansion": "https://cal.example/me"}],
+      "input": "book time via my calendar",
+      "must_contain": ["https://cal.example/me"],
+      "must_not_contain": ["my calendar"]
+    },
+    {
+      "id": "filled-my-signature-expands",
+      "kind": "compose",
+      "style": "plain",
+      "snippets": [{"spoken": "my signature", "expansion": "Best regards,"}],
+      "input": "thanks my signature",
+      "must_contain": ["Best regards,"],
+      "must_not_contain": ["my signature"]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "files.watcherExclude": {
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/.venv/**": true,
+    "**/models/**": true,
+    "**/internal/**": true,
+    "**/artifacts/**": true,
+    "**/packaging/windows/setup-stub/bin/**": true,
+    "**/packaging/windows/setup-stub/obj/**": true
+  },
+  "search.exclude": {
+    "**/dist": true,
+    "**/build": true,
+    "**/.venv": true,
+    "**/models": true,
+    "**/internal": true,
+    "**/artifacts": true,
+    "**/packaging/windows/setup-stub/bin": true,
+    "**/packaging/windows/setup-stub/obj": true
+  },
+  "files.exclude": {
+    "**/internal": true,
+    "**/artifacts": true
+  }
+}

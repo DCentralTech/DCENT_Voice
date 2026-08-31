@@ -1,0 +1,22 @@
+{
+  "moduleId": "dcent-voice",
+  "displayName": "DCENT Voice",
+  "sovereigntyClass": "LOCAL",
+  "command": ".venv/Scripts/python.exe",
+  "args": ["-m", "dcent_voice", "--no-tray", "--no-overlay"],
+  "fakeAudioArgs": ["-m", "dcent_voice", "--no-tray", "--no-overlay", "--no-hotkeys"],
+  "env": {
+    "DCENT_VOICE_SERVICE_HOST": "127.0.0.1",
+    "DCENT_VOICE_SERVICE_PORT": "8765"
+  },
+  "fakeAudioEnv": {
+    "DCENT_VOICE_FAKE_AUDIO": "1",
+    "DCENT_VOICE_SERVICE_HOST": "127.0.0.1",
+    "DCENT_VOICE_SERVICE_PORT": "8765"
+  },
+  "capabilities": [
+    "stt.partial",
+    "stt.final",
+    "module.sovereignty"
+  ]
+}

@@ -1,0 +1,339 @@
+{
+  "version": 1,
+  "description": "Product-specific dictation evaluation. Audio items use committed fixtures. Text items score offline polish, dictionary, and developer forms without claiming ASR WER.",
+  "items": [
+    {
+      "id": "hello",
+      "audio": "tests/fixtures/audio/hello.wav",
+      "reference": "Hello world",
+      "tags": ["short", "en", "regression"],
+      "language": "en"
+    },
+    {
+      "id": "short-command",
+      "audio": "tests/fixtures/audio/eval/short-command.wav",
+      "reference": "Open settings.",
+      "tags": ["short", "command", "en"]
+    },
+    {
+      "id": "conversational",
+      "audio": "tests/fixtures/audio/eval/conversational.wav",
+      "reference": "Can you look at the previous work and draft a plan?",
+      "tags": ["conversational", "en"]
+    },
+    {
+      "id": "dcentral-terms",
+      "audio": "tests/fixtures/audio/eval/dcentral-terms.wav",
+      "reference": "D-Central ships DCENT_Voice for sovereign dictation.",
+      "tags": ["product", "dictionary", "en"]
+    },
+    {
+      "id": "bitcoin",
+      "audio": "tests/fixtures/audio/eval/bitcoin.wav",
+      "reference": "Send 0.021 bitcoin to the hardware wallet.",
+      "tags": ["bitcoin", "numbers", "en"]
+    },
+    {
+      "id": "developer-file",
+      "audio": "tests/fixtures/audio/eval/developer-file.wav",
+      "reference": "Edit app.py and run pytest.",
+      "tags": ["developer", "en"]
+    },
+    {
+      "id": "spoken-dev",
+      "reference": "Open the file app.py in VS Code.",
+      "tags": ["developer", "spoken", "text"]
+    },
+    {
+      "id": "url-email",
+      "audio": "tests/fixtures/audio/eval/url-email.wav",
+      "reference": "Email ada@d-central.tech.",
+      "tags": ["url", "email", "en"]
+    },
+    {
+      "id": "shell",
+      "audio": "tests/fixtures/audio/eval/shell.wav",
+      "reference": "Run git status then cargo test.",
+      "tags": ["shell", "developer", "en"]
+    },
+    {
+      "id": "filename",
+      "audio": "tests/fixtures/audio/eval/filename.wav",
+      "reference": "Save it as config.example.toml.",
+      "tags": ["filename", "en"]
+    },
+    {
+      "id": "punctuation",
+      "audio": "tests/fixtures/audio/eval/punctuation.wav",
+      "reference": "What time is the meeting?",
+      "tags": ["punctuation", "en"]
+    },
+    {
+      "id": "correction",
+      "reference": "Use DCENT_Voice.",
+      "tags": ["correction", "text"]
+    },
+    {
+      "id": "numbers",
+      "audio": "tests/fixtures/audio/eval/numbers.wav",
+      "reference": "The port is 8765.",
+      "tags": ["numbers", "en"]
+    },
+    {
+      "id": "french",
+      "reference": "Bonjour le monde.",
+      "tags": ["multilingual", "fr", "text"],
+      "language": "fr"
+    },
+    {
+      "id": "german",
+      "reference": "Guten Morgen zusammen.",
+      "tags": ["multilingual", "de", "text"],
+      "language": "de"
+    },
+    {
+      "id": "silence",
+      "synthetic": "silence_2s",
+      "reference": "",
+      "tags": ["silence", "hallucination", "synthetic"],
+      "language": "en"
+    },
+    {
+      "id": "ls-short-twenties",
+      "audio": "tests/fixtures/audio/eval/librispeech/1272-141231-0013.wav",
+      "reference": "The twenties",
+      "tags": ["librispeech", "public", "short", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-short-work",
+      "audio": "tests/fixtures/audio/eval/librispeech/1272-135031-0009.wav",
+      "reference": "He doesn't work at all",
+      "tags": ["librispeech", "public", "short", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-classic-exist",
+      "audio": "tests/fixtures/audio/eval/librispeech/1272-141231-0000.wav",
+      "reference": "A man said to the universe sir I exist",
+      "tags": ["librispeech", "public", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-quilter",
+      "audio": "tests/fixtures/audio/eval/librispeech/1272-128104-0000.wav",
+      "reference": "Mister Quilter is the apostle of the middle classes and we are glad to welcome his gospel",
+      "tags": ["librispeech", "public", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-importance",
+      "audio": "tests/fixtures/audio/eval/librispeech/1272-141231-0012.wav",
+      "reference": "I'm here because the matter is of utmost importance and Brandd is the one I must see now stand aside",
+      "tags": ["librispeech", "public", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-rose-princess",
+      "audio": "tests/fixtures/audio/eval/librispeech/1272-135031-0000.wav",
+      "reference": "Because you were sleeping instead of conquering the lovely rose princess has become a fiddle without a bow while poor Shaggy sits there a cooing dove",
+      "tags": ["librispeech", "public", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-christmas",
+      "audio": "tests/fixtures/audio/eval/librispeech/1272-128104-0002.wav",
+      "reference": "He tells us that at this festive season of the year with Christmas and roast beef looming before us similes drawn from eating and its results occur most readily to the mind",
+      "tags": ["librispeech", "public", "long", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-tc-wait",
+      "audio": "tests/fixtures/audio/eval/librispeech/1089-134691-0000.wav",
+      "reference": "He could wait no longer",
+      "tags": ["librispeech", "public", "test-clean", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-tc-angor",
+      "audio": "tests/fixtures/audio/eval/librispeech/121-121726-0002.wav",
+      "reference": "Angor pain painful to hear",
+      "tags": ["librispeech", "public", "test-clean", "female", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-tc-marie",
+      "audio": "tests/fixtures/audio/eval/librispeech/237-134500-0001.wav",
+      "reference": "Marie sighed",
+      "tags": ["librispeech", "public", "test-clean", "female", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-tc-alice",
+      "audio": "tests/fixtures/audio/eval/librispeech/260-123440-0001.wav",
+      "reference": "Poor Alice",
+      "tags": ["librispeech", "public", "test-clean", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-tc-endeavour",
+      "audio": "tests/fixtures/audio/eval/librispeech/1580-141083-0000.wav",
+      "reference": "I will endeavour in my statement to avoid such terms as would serve to limit the events to any particular place or give a clue as to the people concerned",
+      "tags": ["librispeech", "public", "test-clean", "long", "female", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-tc-utility",
+      "audio": "tests/fixtures/audio/eval/librispeech/3570-5694-0001.wav",
+      "reference": "The utility of consumption as an evidence of wealth is to be classed as a derivative growth",
+      "tags": ["librispeech", "public", "test-clean", "female", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-tc-fortune",
+      "audio": "tests/fixtures/audio/eval/librispeech/61-70968-0002.wav",
+      "reference": "A golden fortune and a happy life",
+      "tags": ["librispeech", "public", "test-clean", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-tc-concord",
+      "audio": "tests/fixtures/audio/eval/librispeech/6930-75918-0000.wav",
+      "reference": "Concord returned to its place amidst the tents",
+      "tags": ["librispeech", "public", "test-clean", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-tc-salon",
+      "audio": "tests/fixtures/audio/eval/librispeech/8455-210777-0002.wav",
+      "reference": "On arriving at home at my own residence I found that our salon was filled with a brilliant company",
+      "tags": ["librispeech", "public", "test-clean", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-noisy-exist",
+      "audio": "tests/fixtures/audio/eval/noisy/ls-classic-exist-8db.wav",
+      "reference": "A man said to the universe sir I exist",
+      "tags": ["librispeech", "public", "noisy", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-noisy-wait",
+      "audio": "tests/fixtures/audio/eval/noisy/ls-tc-wait-8db.wav",
+      "reference": "He could wait no longer",
+      "tags": ["librispeech", "public", "noisy", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-noisy-marie",
+      "audio": "tests/fixtures/audio/eval/noisy/ls-tc-marie-8db.wav",
+      "reference": "Marie sighed",
+      "tags": ["librispeech", "public", "noisy", "female", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-long-linnell",
+      "audio": "tests/fixtures/audio/eval/librispeech/1272-128104-0004.wav",
+      "reference": "Linnell's pictures are a sort of up guards and at em paintings and Mason's exquisite idylls are as national as a jingo poem Mister Birket Foster's landscapes smile at one much in the same way that Mister Carker used to flash his teeth and Mister John Collier gives his sitter a cheerful slap on the back before he says like a shampooer in a Turkish bath next man",
+      "tags": ["librispeech", "public", "long", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-noisy-endeavour",
+      "audio": "tests/fixtures/audio/eval/noisy/ls-tc-endeavour-8db.wav",
+      "reference": "I will endeavour in my statement to avoid such terms as would serve to limit the events to any particular place or give a clue as to the people concerned",
+      "tags": ["librispeech", "public", "noisy", "long", "female", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-noisy-christmas",
+      "audio": "tests/fixtures/audio/eval/noisy/ls-christmas-8db.wav",
+      "reference": "He tells us that at this festive season of the year with Christmas and roast beef looming before us similes drawn from eating and its results occur most readily to the mind",
+      "tags": ["librispeech", "public", "noisy", "long", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-noisy-quilter",
+      "audio": "tests/fixtures/audio/eval/noisy/ls-quilter-8db.wav",
+      "reference": "Mister Quilter is the apostle of the middle classes and we are glad to welcome his gospel",
+      "tags": ["librispeech", "public", "noisy", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "ls-noisy-fortune",
+      "audio": "tests/fixtures/audio/eval/noisy/ls-tc-fortune-8db.wav",
+      "reference": "A golden fortune and a happy life",
+      "tags": ["librispeech", "public", "noisy", "male", "en"],
+      "language": "en"
+    },
+    {
+      "id": "lingua-libre-fr-je-mappelle",
+      "audio": "tests/fixtures/audio/eval/multilingual/fr-je-mappelle.wav",
+      "reference": "Je m'appelle.",
+      "tags": ["public", "real-speech", "lingua-libre", "fr", "multilingual-smoke"],
+      "language": "fr"
+    },
+    {
+      "id": "lingua-libre-de-hallo",
+      "audio": "tests/fixtures/audio/eval/multilingual/de-hallo.wav",
+      "reference": "Hallo",
+      "tags": ["public", "real-speech", "lingua-libre", "de"],
+      "language": "de"
+    },
+    {
+      "id": "lingua-libre-es-hola",
+      "audio": "tests/fixtures/audio/eval/multilingual/es-hola.wav",
+      "reference": "Hola",
+      "tags": ["public", "real-speech", "lingua-libre", "es"],
+      "language": "es"
+    },
+    {
+      "id": "code-switch-en-fr-composite",
+      "segments": [
+        "tests/fixtures/audio/eval/accented/en-uk-air-pollution.wav",
+        "tests/fixtures/audio/eval/multilingual/fr-je-mappelle.wav"
+      ],
+      "synthetic": "concatenate_wavs",
+      "reference": "air pollution Je m'appelle",
+      "tags": [
+        "public-components",
+        "real-speech-components",
+        "synthetic-composite",
+        "code-switch",
+        "en-fr"
+      ],
+      "language": "auto"
+    },
+    {
+      "id": "code-switch-fr-en-composite",
+      "segments": [
+        "tests/fixtures/audio/eval/multilingual/fr-je-mappelle.wav",
+        "tests/fixtures/audio/eval/accented/en-uk-above-all.wav"
+      ],
+      "synthetic": "concatenate_wavs",
+      "reference": "Je m'appelle above all",
+      "tags": [
+        "public-components",
+        "real-speech-components",
+        "synthetic-composite",
+        "code-switch",
+        "fr-en"
+      ],
+      "language": "auto"
+    },
+    {
+      "id": "ll-en-above-all",
+      "audio": "tests/fixtures/audio/eval/accented/en-uk-above-all.wav",
+      "reference": "above all",
+      "tags": ["public", "real-speech", "lingua-libre", "en", "short"],
+      "language": "en"
+    },
+    {
+      "id": "ll-en-air-pollution",
+      "audio": "tests/fixtures/audio/eval/accented/en-uk-air-pollution.wav",
+      "reference": "air pollution",
+      "tags": ["public", "real-speech", "lingua-libre", "en", "short"],
+      "language": "en"
+    }
+  ]
+}

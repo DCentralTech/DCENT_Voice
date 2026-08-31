@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "description": "Deterministic EN/FR and FR/EN decoder-transition checks made from separately licensed CC0 real-speech components. Synthetic composites are not natural code-switch speech and must not be presented as an accent or conversational benchmark.",
+  "items": [
+    {
+      "id": "code-switch-en-fr-composite",
+      "segments": [
+        "tests/fixtures/audio/eval/accented/en-uk-air-pollution.wav",
+        "tests/fixtures/audio/eval/multilingual/fr-je-mappelle.wav"
+      ],
+      "synthetic": "concatenate_wavs",
+      "reference": "air pollution Je m'appelle",
+      "tags": [
+        "public-components",
+        "real-speech-components",
+        "synthetic-composite",
+        "code-switch",
+        "en-fr"
+      ],
+      "language": "auto"
+    },
+    {
+      "id": "code-switch-fr-en-composite",
+      "segments": [
+        "tests/fixtures/audio/eval/multilingual/fr-je-mappelle.wav",
+        "tests/fixtures/audio/eval/accented/en-uk-above-all.wav"
+      ],
+      "synthetic": "concatenate_wavs",
+      "reference": "Je m'appelle above all",
+      "tags": [
+        "public-components",
+        "real-speech-components",
+        "synthetic-composite",
+        "code-switch",
+        "fr-en"
+      ],
+      "language": "auto"
+    }
+  ]
+}

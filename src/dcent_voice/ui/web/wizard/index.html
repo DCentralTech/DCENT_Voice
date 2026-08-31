@@ -1,0 +1,101 @@
+<!doctype html>
+<!--
+  DCENT_Voice — open-source, local-first voice dictation
+  Copyright (c) 2026 D-Central Technologies — decentralized technologies for digital sovereignty
+  SPDX-License-Identifier: MIT
+-->
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../fonts/fonts.css">
+    <link rel="stylesheet" href="./wizard.css">
+    <link rel="icon" type="image/png" href="../icons/app-icon-64.png">
+    <title>Welcome to DCENT_Voice</title>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <img class="mark" src="../dcent_voice_icon.svg" alt="">
+        <p class="eyebrow">D-Central Technologies — voice, on your terms</p>
+        <h1>Welcome to DCENT_Voice</h1>
+        <p class="dictate-steps" id="dictateSteps">Hold <kbd>Ctrl+Win</kbd>, speak, release. Text lands where you were typing.</p>
+        <p class="lead">Set up private-first voice dictation on this computer. Microphone, permissions, and the local model are below. English is the default; more languages stay on that same local model. Profiles and engines stay in Settings until you want them.</p>
+      </header>
+
+      <section class="step first-run" aria-labelledby="firstRunHeading">
+        <div class="step-head"><span class="num" aria-hidden="true">00</span><h2 id="firstRunHeading">DCENT_Voice is running</h2></div>
+        <ul class="first-run-facts" id="firstRunFacts">
+          <li>Hold <kbd>Ctrl+Win</kbd> and speak. Release and the text lands where you were typing.</li>
+          <li>The tray icon is in the notification area next to the clock. Windows may hide it under the <kbd>^</kbd> chevron; drag it to the taskbar to pin it.</li>
+          <li>Everything stays on this machine. Your voice is transcribed locally and nothing is uploaded.</li>
+        </ul>
+        <p class="hint">Test your microphone in step 01 below, then choose <strong>Finish setup</strong>. This welcome screen opens once; the tray icon reopens it any time.</p>
+      </section>
+
+      <section class="step" aria-labelledby="microphoneHeading">
+        <div class="step-head"><span class="num" aria-hidden="true">01</span><h2 id="microphoneHeading">Microphone</h2></div>
+        <label class="field"><span>Input device</span>
+          <select id="micSelect"></select>
+        </label>
+        <div class="test-row">
+          <button id="testMic" class="ghost">Test microphone</button>
+          <div class="meter" role="meter" aria-label="Microphone input level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="Not tested"><i id="micFill"></i></div>
+          <span id="micStatus" class="hint" role="status" aria-live="polite">Choose a microphone, then test it.</span>
+        </div>
+        <div id="micReadiness" class="readiness-line" role="status"></div>
+      </section>
+
+      <section class="step" aria-labelledby="hotkeysHeading">
+        <div class="step-head"><span class="num" aria-hidden="true">02</span><h2 id="hotkeysHeading">Shortcuts</h2></div>
+        <p class="hint">Hold a shortcut and speak; release to finish. Offline polish is on by default (fillers, false starts, mid-utterance corrections, punctuation, “scratch that”). Shortcut names can be changed later in Settings.</p>
+        <dl class="keys" id="hotkeys"></dl>
+      </section>
+
+      <details class="advanced">
+        <summary>Transcription profile and model storage</summary>
+        <section class="step" aria-labelledby="transcriptionHeading">
+          <div class="step-head"><span class="num" aria-hidden="true">03</span><h2 id="transcriptionHeading">Transcription profile</h2></div>
+          <div id="engineCard" class="engine" aria-live="polite"></div>
+          <div id="modelStatus" class="status-band" role="status" aria-live="polite"></div>
+          <div id="downloadNote" class="download-note">
+            <h3>Offline model storage</h3>
+            <p>The complete DCENT_Voice package includes the verified local speech model and its offline fallback. Dictation never downloads a speech model at runtime and never uploads microphone audio on a local profile. If either model is missing or corrupt, reinstall the complete package or provision the pinned offline bundle.</p>
+            <p>To choose a different balance of speed, accuracy, and resource use, open <strong>Settings → Models</strong>.</p>
+          </div>
+        </section>
+      </details>
+
+      <section class="step" aria-labelledby="modesHeading">
+        <div class="step-head"><span class="num" aria-hidden="true">04</span><h2 id="modesHeading">Choose the right mode</h2></div>
+        <div class="mode-list">
+          <article class="mode-card is-recommended">
+            <h3>Dictation <span>Recommended</span></h3>
+            <p>Records the complete phrase, then transcribes and inserts it. Start here for the most dependable everyday writing.</p>
+          </article>
+          <article class="mode-card">
+            <h3>Live Dictation <span class="is-caution">Advanced</span></h3>
+            <p>Inserts stable words while you speak. On release, spoken edits like “scratch that” retract already-typed text. A rare mid-stream mis-hear can still flash briefly before finalize.</p>
+          </article>
+          <article class="mode-card">
+            <h3>Command <span class="is-optional">Optional</span></h3>
+            <p>With text selected, your spoken command rewrites that selection. With nothing selected, the result is inserted at the cursor. Rich commands need a running LLM; app/tool actions also need DCENT_ADE.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="step" aria-labelledby="platformHeading">
+        <div class="step-head"><span class="num" aria-hidden="true">05</span><h2 id="platformHeading">Computer readiness</h2></div>
+        <div id="platformReadiness" class="platform-readiness" role="status" aria-live="polite"></div>
+      </section>
+
+      <footer class="actions">
+        <button id="finish" class="primary">Finish setup</button>
+        <span class="hint">You can reopen this from the tray menu anytime.</span>
+      </footer>
+    </main>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="./wizard.js"></script>
+  </body>
+</html>

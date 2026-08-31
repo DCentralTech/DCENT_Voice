@@ -1,0 +1,36 @@
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.Python
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+.venv/
+venv/
+env/
+.env
+.env.*
+config.toml
+*.log
+*.tmp
+models/
+benchmarks/*.json
+
+# Generated .NET setup-stub output (source lives beside these directories).
+packaging/windows/setup-stub/bin/
+packaging/windows/setup-stub/obj/
+packaging/windows/setup-stub/.publish.lock
+
+# Local-only working material: private notes, scratch output, build artifacts.
+internal/
+artifacts/
+mcps/
+.tmp-*
+.tmp_*
+..tmp-*
