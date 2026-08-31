@@ -1,0 +1,386 @@
+<!doctype html>
+<!--
+  DCENT_Voice — open-source, local-first voice dictation
+  Copyright (c) 2026 D-Central Technologies — decentralized technologies for digital sovereignty
+  SPDX-License-Identifier: MIT
+-->
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../fonts/fonts.css">
+    <link rel="stylesheet" href="./settings.css">
+    <link rel="icon" type="image/png" href="../icons/app-icon-64.png">
+    <title>DCENT_Voice Settings</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <img src="../dcent_voice_icon.svg" alt="">
+          <div>
+            <h1>DCENT_Voice</h1>
+            <p id="versionLine"></p>
+          </div>
+        </div>
+        <nav class="tabs" aria-label="Settings sections" role="tablist" aria-orientation="vertical">
+          <button class="tab is-active" id="tab-general" data-page="general" role="tab" aria-selected="true" aria-controls="general" tabindex="0">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm7.4-2.6.1-.9-.1-.9 2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.6-.9L15 3.5h-4l-.4 2.6a7.6 7.6 0 0 0-1.6.9l-2.4-1-2 3.4 2 1.6-.1.9.1.9-2 1.6 2 3.4 2.4-1c.5.4 1 .7 1.6.9l.4 2.6h4l.4-2.6c.6-.2 1.1-.5 1.6-.9l2.4 1 2-3.4-2-1.6Z"/></svg>
+            <span>General</span>
+          </button>
+          <button class="tab" id="tab-modes" data-page="modes" role="tab" aria-selected="false" aria-controls="modes" tabindex="-1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z"/></svg>
+            <span>Modes</span>
+          </button>
+          <p class="nav-group" role="presentation">Advanced</p>
+          <button class="tab" id="tab-models" data-page="models" role="tab" aria-selected="false" aria-controls="models" tabindex="-1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Zm0 2.3 6.5 3.6L12 11.5 5.5 7.9 12 4.3ZM5 9.6l6 3.3v6.5l-6-3.3V9.6Zm8 9.8v-6.5l6-3.3v6.5l-6 3.3Z"/></svg>
+            <span>Models</span>
+          </button>
+          <button class="tab" id="tab-accounts" data-page="accounts" role="tab" aria-selected="false" aria-controls="accounts" tabindex="-1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm0 2c-4 0-8 2-8 5v2h16v-2c0-3-4-5-8-5Z"/></svg>
+            <span>Accounts</span>
+          </button>
+          <button class="tab" id="tab-dictionary" data-page="dictionary" role="tab" aria-selected="false" aria-controls="dictionary" tabindex="-1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h13v17.5c0 .8-.7 1.5-1.5 1.5H6a2.5 2.5 0 0 1 0-5h11V4H6.5C5.7 4 5 4.7 5 5.5v11.6c.3-.1.7-.1 1-.1V2Zm0 16a1 1 0 0 0 0 2h11v-2H6Z"/></svg>
+            <span>Dictionary</span>
+          </button>
+          <button class="tab" id="tab-privacy" data-page="privacy" role="tab" aria-selected="false" aria-controls="privacy" tabindex="-1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5.5V11c0 5 3.4 9.6 8 11 4.6-1.4 8-6 8-11V5.5L12 2Zm-1.2 13.6-3-3 1.4-1.4 1.6 1.6 4-4 1.4 1.4-5.4 5.4Z"/></svg>
+            <span>Privacy</span>
+          </button>
+          <button class="tab" id="tab-about" data-page="about" role="tab" aria-selected="false" aria-controls="about" tabindex="-1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 5h2v2h-2V7Zm0 4h2v6h-2v-6Z"/></svg>
+            <span>About</span>
+          </button>
+        </nav>
+        <div class="sidebar-foot">
+          <span class="pulse-dot"></span>
+          <span>Local-first runtime</span>
+        </div>
+      </aside>
+
+      <main class="content">
+        <section class="page is-active" id="general" role="tabpanel" aria-labelledby="tab-general" tabindex="0">
+          <header>
+            <div><h2>General</h2><p class="subtitle">Hold, speak, release. Everything else is optional.</p></div>
+            <button id="saveGeneral" class="primary">Save changes</button>
+          </header>
+          <div class="dictate-hero" id="dictateHero">
+            <p class="dictate-kicker">How to dictate</p>
+            <p class="dictate-steps"><kbd id="heroDictationHotkey">Ctrl+Win</kbd> · speak · release</p>
+            <p class="subtitle">Text lands in the app you were using. No extra window.</p>
+          </div>
+          <div class="card">
+            <div class="form-grid">
+              <label><span>Language</span>
+                <select id="languageMode" title="English stays on the fast local model. More languages and Auto stay on that same-size model for 25 languages — never a giant one.">
+                  <option value="english">English (fast)</option>
+                  <option value="multilingual">More languages</option>
+                  <option value="auto">Auto-detect</option>
+                </select>
+              </label>
+              <label id="languageCodeRow"><span>Which language</span>
+                <select id="language" title="Human language names. Japanese and other languages outside the local 25-language set use a same-size fallback, never a giant model."></select>
+              </label>
+              <p class="subtitle" id="languageHint">English is the default. Auto and More languages stay on the same local model for French, German, Spanish, and 22 other European languages. Mixed speech still decodes locally. Japanese, Chinese, Korean, Arabic, and Hindi use a same-size fallback — never a giant model.</p>
+              <label><span>Push-to-talk</span><select id="hotkeyMode"><option value="hold">Hold to talk</option><option value="toggle">Press to toggle</option></select></label>
+              <label><span>Dictation hotkey</span><div class="input-action"><input id="dictationHotkey"><button data-record-hotkey="dictationHotkey">Record</button></div></label>
+              <label><span>Writing style</span>
+                <select id="styleDefault" title="Local writing style. Same speech, different destination. No LLM.">
+                  <option value="plain">Plain</option>
+                  <option value="email">Email</option>
+                  <option value="chat">Chat</option>
+                  <option value="code">Code</option>
+                  <option value="formal">Formal</option>
+                  <option value="notes">Notes</option>
+                </select>
+              </label>
+              <label><span>Auto Cleanup</span>
+                <select id="dictationCleanupLevel" title="Local Auto Cleanup. On-device only. No cloud. No LLM required.">
+                  <option value="none">None — keep speech as recognized</option>
+                  <option value="light">Light — fillers and punctuation</option>
+                  <option value="medium">Medium — rewrite ramble and corrections (default)</option>
+                  <option value="high">High — also drop local hedges (I think / I guess)</option>
+                </select>
+              </label>
+              <p class="subtitle">Auto Cleanup and Writing style run on-device after transcription. High is local hedge trimming, not a cloud rewrite. Optional Ollama/LM Studio cleanup stays under Advanced.</p>
+              <h3>Destination styles by app</h3>
+              <p class="subtitle">Same speech, different destination. The built-in map covers Outlook→Email, Slack/Teams→Chat, VS Code/terminals→Code, and Notion/Obsidian/OneNote→Notes. Your locally stored overrides take priority.</p>
+              <p class="subtitle" id="builtInStyleMap"></p>
+              <div id="stylePerAppRows" class="dictionary-list"></div>
+              <button id="addStylePerAppRow" class="ghost add-row" type="button">+ Add app style override</button>
+              <label><span>Overlay position</span><select id="overlayPosition"><option value="bottom-center">Bottom center</option><option value="center">Center</option><option value="top-center">Top center</option></select></label>
+              <label><span>Insert text via</span><select id="injectorDefault"><option value="clipboard">Clipboard paste (fast)</option><option value="keystroke">Keystroke typing (compatible)</option></select></label>
+            </div>
+          </div>
+          <details class="advanced">
+            <summary>Profiles, live dictation, Command, and local API</summary>
+            <div class="card">
+              <div class="form-grid">
+                <label><span>Active profile</span><select id="activeProfile"></select></label>
+                <label><span>Command hotkey (optional)</span><div class="input-action"><input id="commandHotkey" placeholder="off"><button data-record-hotkey="commandHotkey">Record</button></div></label>
+                <label><span>Live dictation hotkey (optional)</span><div class="input-action"><input id="streamingHotkey" placeholder="off"><button data-record-hotkey="streamingHotkey">Record</button></div></label>
+                <label><span>Service host</span><input id="serviceHost"></label>
+                <label><span>Service port</span><input id="servicePort" type="number" min="1" max="65535"></label>
+              </div>
+              <label class="switch"><input id="serviceEnabled" type="checkbox"><span>Local API (for DCENT_ADE)</span></label>
+              <h3>Per-app injection</h3>
+              <div id="perAppRows" class="dictionary-list"></div>
+              <button id="addPerAppRow" class="ghost add-row">+ Add app override</button>
+            </div>
+            <div class="card">
+              <h3>Optional local AI cleanup</h3>
+              <p class="subtitle">On-device tone (email / chat / formal) is always local and needs no model. This toggle asks a running Ollama or LM Studio model to polish further. If that model is down, dictation still inserts the heuristic text. Never required. Never silent cloud.</p>
+              <label class="switch"><input id="localCleanupToggle" type="checkbox"><span>Use local AI cleanup when a model is running</span></label>
+              <p class="subtitle" id="localCleanupStatus">On-device tone only. Optional local LLM is off.</p>
+            </div>
+          </details>
+          <div class="card">
+            <div class="switch-grid">
+              <label class="switch"><input id="overlayEnabled" type="checkbox"><span>Show overlay while dictating</span></label>
+              <label class="switch"><input id="overlayLazy" type="checkbox"><span>Low-resource overlay (create on first use)</span></label>
+              <label class="switch"><input id="overlayReducedMotion" type="checkbox"><span>Reduced motion</span></label>
+              <label class="switch"><input id="restoreClipboard" type="checkbox"><span>Restore clipboard after paste</span></label>
+              <label class="switch"><input id="launchStartup" type="checkbox"><span>Launch at startup</span></label>
+            </div>
+            <label><span>Speech model RAM</span>
+              <select id="idleUnloadS">
+                <option value="0">Keep warm (higher RAM)</option>
+                <option value="300">Unload after 5 minutes idle</option>
+                <option value="600">Unload after 10 minutes idle</option>
+                <option value="1800">Unload after 30 minutes idle</option>
+              </select>
+            </label>
+            <p class="subtitle">Default 10 minutes: a dictation session stays instant (~0.2s). All-day tray drops ~700 MB. Next hold shows Loading (~4s) instead of a silent stall.</p>
+          </div>
+        </section>
+
+        <section class="page" id="modes" role="tabpanel" aria-labelledby="tab-modes" tabindex="0" hidden>
+          <header>
+            <div><h2>Modes</h2><p class="subtitle">One hotkey is enough: hold dictation, speak, release. Other modes are optional.</p></div>
+          </header>
+          <div class="mode-list">
+            <article class="mode-card is-recommended">
+              <div class="mode-card-head"><h3>Dictation</h3><span class="mode-badge">Recommended</span></div>
+              <p>Hold <kbd id="modeDictationHotkey">your dictation hotkey</kbd>, speak, then release. DCENT_Voice transcribes the complete recording and inserts it into the app you were using.</p>
+              <p class="mode-detail">Best for everyday writing. The full recording is available before text is inserted, so recognition is more reliable than Live Dictation. Auto Cleanup (None / Light / Medium / High) and Writing style (email, chat, code, formal, notes) run on-device after transcription — no network and no LLM required. Optional local AI cleanup stays under Advanced.</p>
+            </article>
+            <article class="mode-card">
+              <div class="mode-card-head"><h3>Live Dictation</h3><span class="mode-badge is-caution">Advanced</span></div>
+              <p>Hold <kbd id="modeStreamingHotkey">your live dictation hotkey</kbd> to insert stable words while you are still speaking.</p>
+              <p class="mode-warning" role="note">Stable words type while you speak. Spoken edits like <strong>scratch that</strong> retract on release (Backspace). A rare mid-stream mis-hear can still appear briefly before finalize. Prefer regular Dictation when accuracy matters most.</p>
+            </article>
+            <article class="mode-card">
+              <div class="mode-card-head"><h3>Command</h3><span class="mode-badge is-optional">Optional</span></div>
+              <p>Hold <kbd id="modeCommandHotkey">your command hotkey</kbd> and describe an action.</p>
+              <ul class="mode-rules">
+                <li><strong>Text selected:</strong> your command rewrites or replaces that selection.</li>
+                <li><strong>Nothing selected:</strong> the result is inserted at the cursor.</li>
+                <li><strong>App or tool action:</strong> DCENT_ADE must be running and connected.</li>
+              </ul>
+              <p class="mode-detail">Offline transforms work without an LLM: formalize, uppercase/lowercase/title/sentence case, bullet or numbered list, snake/camel/kebab/constant case, quote, parentheses, fix spacing, shorten, reverse. A local cleanup LLM still helps for free-form rewrites.</p>
+            </article>
+            <article class="mode-card mode-card-tips" aria-labelledby="offlinePolishHeading">
+              <div class="mode-card-head"><h3 id="offlinePolishHeading">Spoken edits &amp; polish</h3><span class="mode-badge">Local</span></div>
+              <p>While dictating, speak structure instead of typing it:</p>
+              <ul class="mode-rules mode-edits">
+                <li><strong>scratch that</strong> · <strong>replace X with Y</strong> · <strong>no I meant …</strong> — natural corrections</li>
+                <li><strong>scratch that</strong> / <strong>undo that</strong> alone — retract the last insert</li>
+                <li><strong>email style</strong> · <strong>as notes</strong> · <strong>in code style</strong> — this utterance only, local styles</li>
+                <li><strong>cleanup high</strong> · <strong>no cleanup</strong> — this utterance only, local Auto Cleanup</li>
+                <li><strong>press enter</strong> — insert the rest, then send Enter (chat / prompt boxes)</li>
+                <li><strong>my email</strong> · <strong>my calendar</strong> · <strong>my signature</strong> — fill the expansion once, then say the cue</li>
+                <li><strong>Import JSON</strong> — load a local snippet file; nothing is synced off this machine</li>
+                <li><strong>new line</strong> · <strong>new sentence</strong> · <strong>bullet</strong> — structure and lists</li>
+                <li><strong>comma</strong> · <strong>full stop</strong> · <strong>question mark</strong> — punctuation by voice</li>
+                <li><strong>dot py</strong> · <strong>vs code</strong> · <strong>git status</strong> — developer spoken forms</li>
+              </ul>
+              <p class="mode-detail">Auto Cleanup and Writing style live on <strong>General</strong>. Names, brands, jargon, snippets, and fine polish toggles live under <strong>Dictionary</strong>.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="page" id="models" role="tabpanel" aria-labelledby="tab-models" tabindex="0" hidden>
+          <header>
+            <div><h2>Models</h2><p class="subtitle">Compare the complete voice pipeline, configured hardware, resource use, and data flow.</p></div>
+            <div class="header-actions"><button id="saveModels" class="primary">Save changes</button><button id="refreshModels" class="ghost">Refresh</button></div>
+          </header>
+          <aside id="hardwareStatus" class="hardware-banner" role="status" aria-live="polite" hidden></aside>
+          <div id="profileModels" class="profile-list"></div>
+          <div id="ttsModels" class="profile-list"></div>
+          <pre id="modelOutput" class="terminal" data-placeholder="Model scan output appears here…"></pre>
+          <button id="runBenchmark" class="ghost">Run benchmark</button>
+        </section>
+
+        <section class="page" id="accounts" role="tabpanel" aria-labelledby="tab-accounts" tabindex="0" hidden>
+          <header>
+            <div><h2>Accounts</h2><p class="subtitle">Optional cloud providers. Nothing leaves this machine without consent.</p></div>
+            <button id="refreshProviders" class="ghost">Refresh</button>
+          </header>
+          <div id="providerList" class="provider-list"></div>
+        </section>
+
+        <section class="page" id="dictionary" role="tabpanel" aria-labelledby="tab-dictionary" tabindex="0" hidden>
+          <header>
+            <div><h2>Dictionary &amp; snippets</h2><p class="subtitle">Names, brands, jargon, voice shortcuts, and offline polish — all local.</p></div>
+            <button id="saveDictionary" class="primary">Save changes</button>
+          </header>
+          <div class="card">
+            <h3>Offline dictation polish</h3>
+            <p class="subtitle">Fine-grained toggles for fillers, spoken edits, and developer terms. Auto Cleanup intensity (None / Light / Medium / High) lives on <strong>General</strong> next to Writing style.</p>
+            <div class="switch-grid">
+              <label class="switch"><input id="dictationLocalPolish" type="checkbox"><span>Local polish (fillers, false starts, corrections, punctuation)</span></label>
+              <label class="switch"><input id="dictationSpokenEdits" type="checkbox"><span>Spoken edits (“scratch that”, “new line”, lists…)</span></label>
+              <label class="switch"><input id="dictationDeveloperTerms" type="checkbox"><span>Developer terms (“dot py”, paths, CLI phrases)</span></label>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Learned vocabulary</h3>
+            <p class="subtitle">Spoken corrections (“replace X with Y”, “no I meant …”) stay on this machine. Audio is never stored. Longer learned rewrites require explicit trusted-prose context; otherwise only whole-utterance corrections run. Inspect or reset anytime.</p>
+            <div class="switch-grid">
+              <label class="switch"><input id="personalizationEnabled" type="checkbox"><span>Use learned vocabulary</span></label>
+              <label class="switch"><input id="personalizationLearn" type="checkbox"><span>Learn from spoken corrections</span></label>
+              <label class="switch"><input id="personalizationProseContext" type="checkbox"><span>Allow longer rewrites in trusted prose dictation</span></label>
+            </div>
+            <p class="subtitle" id="lastUtterance">No last dictation in memory.</p>
+            <div class="row">
+              <label class="span-2"><span>Correct last dictation</span><input id="lastCorrection" placeholder="What you meant"></label>
+              <button id="learnLast" class="ghost">Learn</button>
+            </div>
+            <p class="subtitle" id="learnedCount">No learned terms yet.</p>
+            <div id="learnedRows" class="dictionary-list"></div>
+            <p class="subtitle" id="learnedStyleCount">No learned destination styles yet.</p>
+            <div id="learnedStyleRows" class="dictionary-list"></div>
+            <div class="row">
+              <label><span>App</span><input id="learnedStyleApp" placeholder="notepad.exe"></label>
+              <label><span>Style</span>
+                <select id="learnedStyleName">
+                  <option value="plain">plain</option>
+                  <option value="email">email</option>
+                  <option value="chat">chat</option>
+                  <option value="code">code</option>
+                  <option value="formal">formal</option>
+                  <option value="notes">notes</option>
+                </select>
+              </label>
+              <button id="rememberAppStyle" class="ghost">Remember style</button>
+            </div>
+            <button id="resetAppStyles" class="ghost">Reset destination styles</button>
+            <button id="resetPersonalization" class="ghost">Reset learned vocabulary</button>
+          </div>
+          <h3>Personal dictionary</h3>
+          <p class="subtitle">Use the dictionary for names, product terms, and phrases recognition often gets wrong. Enter what you say and the exact written form you want; cues can be up to 60 characters and corrections up to 4,000. Everything stays on this machine. Search and <strong>Starred only</strong> control which rows you export or remove, and starred entries receive dictation priority. CSV imports are reviewed before they change anything and can be undone.</p>
+          <div class="dictionary-tools">
+            <input id="dictionaryFilter" class="dictionary-filter" type="search" placeholder="Search dictionary" aria-label="Search dictionary">
+            <label class="starred-only"><input id="dictionaryStarredOnly" type="checkbox"> Starred only</label>
+            <label><span>Order</span>
+              <select id="dictionarySort">
+                <option value="saved">As saved</option>
+                <option value="az">A–Z</option>
+                <option value="za">Z–A</option>
+                <option value="starred">Starred first</option>
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+              </select>
+            </label>
+          </div>
+          <p id="dictionaryCount" class="list-count">No terms</p>
+          <div id="dictionaryRows" class="dictionary-list"></div>
+          <button id="addDictionaryRow" class="ghost add-row">+ Add term</button>
+          <div class="snippet-io">
+            <button id="importDictionary" class="ghost" type="button">Import CSV</button>
+            <button id="exportDictionary" class="ghost" type="button">Export CSV</button>
+            <button id="removeVisibleDictionary" class="ghost" type="button">Remove visible</button>
+            <button id="undoDictionaryImport" class="ghost" type="button" hidden>Undo dictionary import</button>
+            <input id="importDictionaryFile" type="file" accept="text/csv,.csv" hidden>
+          </div>
+          <h3>Snippets</h3>
+          <p class="subtitle">Use snippets for reusable text such as signatures, links, and common replies. Say a short cue to insert its longer expansion; the empty starter cues do nothing until you fill them in. Snippets stay on this machine. Search and <strong>Starred only</strong> control which rows you export or remove. JSON imports are reviewed before they change anything and can be undone.</p>
+          <div class="dictionary-tools">
+            <input id="snippetFilter" class="dictionary-filter" type="search" placeholder="Search snippets" aria-label="Search snippets">
+            <label class="starred-only"><input id="snippetStarredOnly" type="checkbox"> Starred only</label>
+            <label><span>Order</span>
+              <select id="snippetSort">
+                <option value="saved">As saved</option>
+                <option value="az">A–Z</option>
+                <option value="za">Z–A</option>
+                <option value="starred">Starred first</option>
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+              </select>
+            </label>
+          </div>
+          <p id="snippetCount" class="list-count">No snippets</p>
+          <div id="snippetRows" class="dictionary-list"></div>
+          <button id="addSnippetRow" class="ghost add-row">+ Add snippet</button>
+          <div class="snippet-io">
+            <button id="importSnippets" class="ghost" type="button">Import JSON</button>
+            <button id="exportSnippets" class="ghost" type="button">Export JSON</button>
+            <button id="removeVisibleSnippets" class="ghost" type="button">Remove visible</button>
+            <button id="undoSnippetImport" class="ghost" type="button" hidden>Undo snippet import</button>
+            <input id="importSnippetsFile" type="file" accept="application/json,.json" hidden>
+          </div>
+          <div id="snippetImportReview" class="snippet-review" hidden>
+            <p id="snippetImportSummary"></p>
+            <ul id="snippetImportChanges"></ul>
+            <div class="snippet-io">
+              <button id="applySnippetImport" class="primary" type="button">Apply snippet import</button>
+              <button id="doneSnippetImport" class="primary" type="button" hidden>Done snippet import</button>
+              <button id="cancelSnippetImport" class="ghost" type="button">Cancel snippet import</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="privacy" role="tabpanel" aria-labelledby="tab-privacy" tabindex="0" hidden>
+          <header>
+            <div><h2>Privacy</h2><p class="subtitle">Sovereignty status, consent ledger, and the egress log.</p></div>
+            <button id="refreshPrivacy" class="ghost">Refresh</button>
+          </header>
+          <div id="firstRunEducation" class="status-band"></div>
+          <div id="privacyStatus" class="status-band"></div>
+          <div id="privacyProviders" class="provider-list"></div>
+          <div class="card recovery-card" aria-labelledby="recoveryHeading">
+            <div class="recovery-heading">
+              <div>
+                <h3 id="recoveryHeading">Failed dictation recovery</h3>
+                <p class="model-note">Off by default. When enabled, only usable text that could not be inserted is kept locally. Successful dictation and microphone audio are never stored.</p>
+              </div>
+              <label class="switch"><input id="recoveryEnabled" type="checkbox"><span>Keep failed text</span></label>
+            </div>
+            <div class="recovery-controls">
+              <label><span>Maximum items</span>
+                <select id="recoveryMaxItems"><option>5</option><option selected>10</option><option>20</option><option>50</option></select>
+              </label>
+              <label><span>Delete after</span>
+                <select id="recoveryMaxAge"><option value="1">1 hour</option><option value="24" selected>24 hours</option><option value="72">3 days</option><option value="168">7 days</option></select>
+              </label>
+              <button id="applyRecoveryPolicy" class="ghost" type="button">Apply retention</button>
+              <button id="clearRecovery" class="ghost" type="button">Clear all</button>
+            </div>
+            <div id="recoveryStatus" class="model-note" role="status"></div>
+            <div id="recoveryList" class="recovery-list"></div>
+          </div>
+          <pre id="egressLog" class="terminal" data-placeholder="Egress log is empty — nothing has left this machine."></pre>
+        </section>
+
+        <section class="page" id="about" role="tabpanel" aria-labelledby="tab-about" tabindex="0" hidden>
+          <header><div><h2>About</h2><p class="subtitle">Voice, on your terms.</p></div></header>
+          <div class="about">
+            <img src="../dcent_voice_icon.svg" alt="">
+            <p class="about-brand">D-Central Technologies</p>
+            <p class="about-tag">For Digital Sovereigns.</p>
+            <div class="about-update">
+              <button id="checkUpdate">Check for updates</button>
+              <span id="updateStatus" class="about-fine"></span>
+            </div>
+            <p class="about-fine">MIT licensed. GPL projects are reference-only.</p>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="./settings.js"></script>
+  </body>
+</html>

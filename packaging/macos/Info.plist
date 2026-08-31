@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key><string>DCENT Voice</string>
+  <key>CFBundleDisplayName</key><string>DCENT Voice</string>
+  <key>CFBundleIdentifier</key><string>tech.dcentral.dcent-voice</string>
+  <key>CFBundleVersion</key><string>0.0.0</string>
+  <key>CFBundleShortVersionString</key><string>0.2.0</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleExecutable</key><string>dcent-voice</string>
+  <key>CFBundleIconFile</key><string>dcent-voice.icns</string>
+  <key>LSMinimumSystemVersion</key><string>12.0</string>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>DCENT Voice transcribes what you say on this Mac. Audio stays local unless you enable a cloud provider.</string>
+  <key>NSAppleEventsUsageDescription</key>
+  <string>DCENT Voice pastes dictated text into the app that has focus.</string>
+  <key>NSAccessibilityUsageDescription</key>
+  <string>DCENT Voice uses accessibility APIs to paste dictated text into the app that has focus.</string>
+  <key>LSUIElement</key><true/>
+</dict>
+</plist>

@@ -1,0 +1,32 @@
+<!doctype html>
+<!--
+  DCENT_Voice — open-source, local-first voice dictation
+  Copyright (c) 2026 D-Central Technologies — decentralized technologies for digital sovereignty
+  SPDX-License-Identifier: MIT
+-->
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./overlay.css">
+    <title>DCENT_Voice Overlay</title>
+  </head>
+  <body>
+    <main class="overlay-shell" aria-hidden="true">
+      <div class="privacy-ring"></div>
+      <div id="iconHost" class="icon-host"></div>
+      <div class="cloud-badge" title="Cloud or hybrid path"></div>
+      <p id="stateLabel" class="state-label">Listening</p>
+      <div class="chip-row">
+        <p id="langBadge" class="lang-badge" hidden></p>
+        <p id="styleBadge" class="lang-badge" hidden></p>
+        <p id="cleanupBadge" class="lang-badge" hidden></p>
+        <p id="priorityBadge" class="lang-badge" hidden title=""></p>
+      </div>
+      <p id="statusMessage" class="status-message" hidden></p>
+    </main>
+    <p id="accessibleStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+    <script src="./overlay.js"></script>
+  </body>
+</html>

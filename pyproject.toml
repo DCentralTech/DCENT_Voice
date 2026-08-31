@@ -1,0 +1,172 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dcent-voice"
+version = "0.2.0b1"
+description = "Local-first voice dictation for digital sovereigns."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [
+  { name = "D-Central Technologies" },
+]
+keywords = ["dictation", "whisper", "ollama", "local-first", "voice"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+]
+dependencies = [
+  "fastapi>=0.115",
+  # Core product dependency on every OS. CTranslate2 selects CUDA when the
+  # runtime is available and otherwise uses CPU; the old `cuda` extra made a
+  # normal install launch successfully but fail on first transcription.
+  "faster-whisper>=1.0.3",
+  # Optional-quality path that is now the shipped desktop default. Whisper
+  # remains the fallback when ONNX weights or the extra cannot load.
+  "onnx-asr>=0.12",
+  "huggingface-hub>=0.30",
+  "httpx>=0.27",
+  "keyring>=25.2",
+  "SecretStorage>=3.3; platform_system == 'Linux'",
+  # Direct security floor for SecretStorage's Linux dependency closure. Keep
+  # every platform lock free of the PKCS#7 oracle fixed in cryptography 50.
+  "cryptography>=50.0.0; platform_system == 'Linux'",
+  "numpy>=1.26",
+  "platformdirs>=4.2",
+  "pydantic>=2.7",
+  "pydantic-settings>=2.3",
+  "pynput>=1.7.7",
+  "pystray>=0.19.5",
+  "Pillow>=10.0",
+  "pywebview>=5.1",
+  # pywebview does not install a Linux GUI backend by default. Keep GTK's
+  # Python bridge in the Linux dependency closure so source and frozen builds
+  # can actually open Settings/Setup instead of failing on `import gi`.
+  "PyGObject==3.50.0; platform_system == 'Linux'",
+  "pycairo>=1.26; platform_system == 'Linux'",
+  "sounddevice>=0.4.7",
+  "uvicorn>=0.30",
+  "websockets>=12",
+  "pywin32>=306; platform_system == 'Windows'",
+  "uiautomation>=2.0; platform_system == 'Windows'",
+  "pyobjc-framework-Cocoa>=10.0; platform_system == 'Darwin'",
+  "pyobjc-framework-Quartz>=10.0; platform_system == 'Darwin'",
+  "pyobjc-framework-Security>=10.0; platform_system == 'Darwin'",
+  "pyobjc-framework-WebKit>=10.0; platform_system == 'Darwin'",
+]
+
+[project.urls]
+Homepage = "https://github.com/DCentralTech/DCENT_Voice"
+Repository = "https://github.com/DCentralTech/DCENT_Voice"
+Issues = "https://github.com/DCentralTech/DCENT_Voice/issues"
+
+[project.optional-dependencies]
+cuda = [
+  # Compatibility extra retained for existing install commands. The ASR engine
+  # is now a base dependency because dictation cannot function without it.
+]
+# Source-preview local TTS (Wave E1). Kokoro-82M via kokoro-onnx uses
+# onnxruntime, which already ships transitively with faster-whisper — no torch.
+# Piper is deferred pending compatible voice licensing. Model assets are NOT
+# installed here; they are consent-gated downloads (dcent_voice.tts.assets).
+# ADR V003: XTTS is excluded (non-commercial license).
+tts = [
+  "kokoro-onnx>=0.4",
+]
+wake = [
+  # The model itself is never bundled or fetched: Voice loads only the local,
+  # checksum-pinned hey-dcent manifest under the user config directory.
+  "openwakeword>=0.6",
+]
+piper = [
+  # Runtime only. Voice assets remain user-supplied and manifest/checksum gated.
+  "piper-tts>=1.2",
+]
+cloud = [
+  "deepgram-sdk>=3.5",
+  "groq>=0.9",
+  "openai>=1.35",
+]
+whispercpp = [
+  "pywhispercpp>=1.5",
+]
+parakeet = [
+  # NVIDIA Parakeet TDT via ONNX Runtime. CPU works; CUDA is optional.
+  # Model weights are staged into Setup.exe (CC-BY-4.0). Also the shipped default.
+  "onnx-asr>=0.12",
+  "huggingface-hub>=0.30",
+]
+dev = [
+  # Release builds must use the lock-resolved toolchain. Installing an
+  # unconstrained PyInstaller after ``uv sync`` makes tagged artifacts
+  # dependent on whatever the package index serves that day.
+  "pyinstaller>=6.11,<7",
+  "mypy==2.3.1",
+  "pytest>=8.2",
+  "pytest-timeout>=2.3",
+  "pre-commit>=4",
+  "ruff>=0.6",
+  # DVAP message/registry schema conformance in tests (docs/schemas/dvap).
+  "jsonschema>=4.0",
+  # starlette's TestClient is migrating from httpx to httpx2; having it
+  # installed keeps the test suite warning-free and future-proof.
+  "httpx2>=2.0",
+]
+
+[project.scripts]
+dcent-voice = "dcent_voice.app:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dcent_voice"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"config.example.toml" = "dcent_voice/config.example.toml"
+
+[tool.hatch.build.targets.sdist]
+# Evaluation recordings/screenshots are contributor evidence, not runtime
+# package content. Keep the published source archive deterministic and limited
+# to the material needed to rebuild the wheel.
+include = [
+  "/src",
+  "/config.example.toml",
+  "/LICENSE",
+  "/README.md",
+  "/SECURITY.md",
+  "/THIRD-PARTY-LICENSES.md",
+  "/pyproject.toml",
+  "/uv.lock",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "hw: requires local hardware, models, or running services",
+  "interactive: mutates the live desktop, input devices, user profile, installer state, or foreground apps; requires DCENT_VOICE_ALLOW_INTERACTIVE_TESTS=1",
+  "tts_models: requires real Kokoro model assets (opt-in --run-tts-models)",
+  "win32_native: requires Win32 ctypes, UIA, or a Windows EXE (skipped on other OS)",
+]
+addopts = "-ra"
+# Hard per-test ceiling so a hung subprocess/UI test can never stall a session forever.
+timeout = 900
+timeout_method = "thread"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [
+  ".tmp-*",
+  "build",
+  "dist",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]

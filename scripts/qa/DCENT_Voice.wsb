@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DCENT_Voice — pristine-host QA in Windows Sandbox.
+
+  This file is a TEMPLATE. Windows Sandbox requires an absolute HostFolder and
+  refuses to start when it does not exist, so the path below is a placeholder.
+  Generate a runnable copy with the current repository path:
+
+      pwsh -File scripts\qa\new_sandbox.ps1              # offline pass (default)
+      pwsh -File scripts\qa\new_sandbox.ps1 -Networking  # SmartScreen pass
+
+  Both write build\qa\DCENT_Voice.wsb and print the path. Double-click it, or
+  pass -Start to launch immediately.
+
+  Notes:
+  * Disabled networking is the point of the first pass: it proves the app
+    installs, launches, loads the shipped model, and dictates with no network
+    at all (AC9). Run the second pass with networking to observe SmartScreen,
+    which is the real explanation for the "it does an internet connection"
+    report.
+  * The dist folder is mapped READ-ONLY so a sandbox run can never mutate the
+    artefacts you are about to ship. Copy Setup.exe to the sandbox desktop
+    before running it if you want to exercise a writable source.
+  * Windows Sandbox images frequently ship without the Edge WebView2 runtime.
+    That is deliberate coverage here: Settings/overlay/wizard must degrade to
+    the native dialog path while hold-to-talk keeps working.
+  * ProtectedClient is off: it blocks clipboard and some UI automation, both of
+    which the injection paths under test rely on.
+
+  Checklist and evidence template: docs/QA_FRESH_MACHINE.md
+-->
+<Configuration>
+  <VGpu>Disable</VGpu>
+  <Networking>__DCENT_NETWORKING__</Networking>
+  <ProtectedClient>Disable</ProtectedClient>
+  <ClipboardRedirection>Enable</ClipboardRedirection>
+  <AudioInput>Enable</AudioInput>
+  <VideoInput>Disable</VideoInput>
+  <PrinterRedirection>Disable</PrinterRedirection>
+  <MemoryInMB>8192</MemoryInMB>
+  <MappedFolders>
+    <MappedFolder>
+      <HostFolder>__DCENT_DIST_HOSTFOLDER__</HostFolder>
+      <SandboxFolder>C:\Users\WDAGUtilityAccount\Desktop\dist</SandboxFolder>
+      <ReadOnly>true</ReadOnly>
+    </MappedFolder>
+  </MappedFolders>
+  <LogonCommand>
+    <Command>explorer.exe C:\Users\WDAGUtilityAccount\Desktop\dist</Command>
+  </LogonCommand>
+</Configuration>

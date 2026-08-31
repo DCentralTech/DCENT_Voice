@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DCENT_Voice — open-source, local-first voice dictation
+Copyright (c) 2026 D-Central Technologies
+SPDX-License-Identifier: CC0-1.0
+-->
+<component type="desktop-application">
+  <id>tech.dcentral.dcent-voice</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>DCENT Voice</name>
+  <summary>Local-first voice dictation</summary>
+  <description>
+    <p>
+      DCENT Voice turns speech into text locally without requiring an account
+      or sending audio to a cloud service.
+    </p>
+    <p>
+      Hold the dictation hotkey, speak, and release to insert text into the
+      application that has focus. Optional cloud providers require explicit
+      consent.
+    </p>
+  </description>
+  <launchable type="desktop-id">dcent-voice.desktop</launchable>
+  <developer id="tech.dcentral">
+    <name>D-Central Technologies</name>
+  </developer>
+  <url type="homepage">https://github.com/DCentralTech/DCENT_Voice</url>
+  <url type="bugtracker">https://github.com/DCentralTech/DCENT_Voice/issues</url>
+  <provides>
+    <binary>dcent-voice</binary>
+  </provides>
+  <releases>
+    <release version="@VERSION@" date="2026-08-16" />
+  </releases>
+  <content_rating type="oars-1.1" />
+</component>

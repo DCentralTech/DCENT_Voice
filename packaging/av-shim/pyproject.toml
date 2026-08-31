@@ -1,0 +1,13 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "av"
+version = "18.0.0+dcentshim.1"
+description = "Fail-closed PyAV compatibility shim for DCENT_Voice PCM-only offline installs."
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/av"]

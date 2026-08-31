@@ -1,0 +1,263 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dcentral.tech/dcent/schemas/dvap/message.schema.json",
+  "title": "DVAP Message",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "protocol",
+        "version",
+        "moduleId",
+        "capabilities",
+        "sovereigntyClass",
+        "capabilitySovereignty"
+      ],
+      "properties": {
+        "type": { "const": "hello" },
+        "protocol": { "const": "dvap" },
+        "version": { "type": "string" },
+        "moduleId": { "type": "string" },
+        "capabilities": { "type": "array", "items": { "type": "string" } },
+        "sovereigntyClass": {
+          "type": "string",
+          "enum": ["LOCAL", "LAN", "SERVER_EGRESS", "CLOUD", "UNKNOWN"]
+        },
+        "capabilitySovereignty": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["capability", "sovereigntyClass"],
+            "properties": {
+              "capability": { "type": "string", "minLength": 1 },
+              "sovereigntyClass": {
+                "type": "string",
+                "enum": ["LOCAL", "LAN", "SERVER_EGRESS", "CLOUD", "UNKNOWN"]
+              },
+              "reason": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "sessionId", "acceptedVersion", "capabilities"],
+      "properties": {
+        "type": { "const": "welcome" },
+        "sessionId": { "type": "string" },
+        "acceptedVersion": { "type": "string" },
+        "capabilities": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "text"],
+      "properties": {
+        "type": { "enum": ["stt.partial", "stt.final", "tts.append"] },
+        "text": { "type": "string" },
+        "stable": { "type": "boolean" },
+        "final": { "type": "boolean" },
+        "requestId": { "type": "string", "minLength": 1, "maxLength": 128 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "requestId", "sampleRate", "channels", "encoding"],
+      "properties": {
+        "type": { "const": "audio.in.begin" },
+        "requestId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "sampleRate": { "const": 16000 },
+        "channels": { "const": 1 },
+        "encoding": { "const": "pcm_s16le" },
+        "style": { "enum": ["plain", "email", "chat", "code", "formal", "notes"] },
+        "polish": { "type": "boolean" },
+        "app_context": { "type": "string", "minLength": 1, "maxLength": 128 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "requestId", "sampleRate", "channels", "encoding"],
+      "properties": {
+        "type": { "const": "tts.audio.begin" },
+        "requestId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "sampleRate": { "type": "integer", "minimum": 1 },
+        "channels": { "const": 1 },
+        "encoding": { "const": "pcm_s16le" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "requestId"],
+      "properties": {
+        "type": { "enum": ["audio.in.end", "tts.audio.end"] },
+        "requestId": { "type": "string", "minLength": 1, "maxLength": 128 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "requestId", "text"],
+      "properties": {
+        "type": { "const": "tts.synth.begin" },
+        "requestId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "text": { "type": "string", "minLength": 1, "maxLength": 4096 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "text"],
+      "properties": {
+        "type": { "const": "text.compose" },
+        "text": { "type": "string", "minLength": 1, "maxLength": 20000 },
+        "style": { "enum": ["plain", "email", "chat", "code", "formal", "notes"] },
+        "polish": { "type": "boolean" },
+        "cleanup_level": { "enum": ["none", "light", "medium", "high"] },
+        "app_context": { "type": "string", "minLength": 1, "maxLength": 128 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "text"],
+      "properties": {
+        "type": { "const": "text.composed" },
+        "text": { "type": "string" },
+        "style": { "enum": ["plain", "email", "chat", "code", "formal", "notes"] }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "mode"],
+      "properties": {
+        "type": { "const": "voice.mode.set" },
+        "mode": { "enum": ["push_to_talk", "toggle", "wake_word"] }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "mode", "wakeWordAvailable", "wakeWordEnabled"],
+      "properties": {
+        "type": { "const": "voice.mode" },
+        "mode": { "enum": ["push_to_talk", "toggle", "wake_word"] },
+        "wakeWordAvailable": { "type": "boolean" },
+        "wakeWordEnabled": { "type": "boolean" },
+        "detail": { "type": "string" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "voice.devices.get" } }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "kind", "deviceId"],
+      "properties": {
+        "type": { "const": "voice.device.set" },
+        "kind": { "enum": ["input", "output"] },
+        "deviceId": { "type": ["string", "null"] }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "inputs", "outputs", "selectedInput", "selectedOutput"],
+      "properties": {
+        "type": { "const": "voice.devices" },
+        "inputs": { "type": "array", "items": { "$ref": "#/$defs/audioDevice" } },
+        "outputs": { "type": "array", "items": { "$ref": "#/$defs/audioDevice" } },
+        "selectedInput": { "type": ["string", "null"] },
+        "selectedOutput": { "type": ["string", "null"] }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "const": "tts.cancel" },
+        "reason": { "type": "string" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "source"],
+      "properties": {
+        "type": { "const": "barge_in" },
+        "source": { "enum": ["ptt", "wake_word", "vad"] }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "sovereigntyClass"],
+      "properties": {
+        "type": { "const": "module.sovereignty" },
+        "sovereigntyClass": {
+          "type": "string",
+          "enum": ["LOCAL", "LAN", "SERVER_EGRESS", "CLOUD", "UNKNOWN"]
+        },
+        "observedClass": {
+          "type": "string",
+          "enum": ["LOCAL", "LAN", "SERVER_EGRESS", "CLOUD", "UNKNOWN"]
+        },
+        "capability": { "type": "string", "minLength": 1 },
+        "consentState": {
+          "type": "string",
+          "enum": ["granted", "revoked", "required", "blocked"]
+        },
+        "reason": { "type": "string", "minLength": 1 },
+        "missingProviders": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "capabilitySovereignty": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["capability", "sovereigntyClass"],
+            "properties": {
+              "capability": { "type": "string", "minLength": 1 },
+              "sovereigntyClass": {
+                "type": "string",
+                "enum": ["LOCAL", "LAN", "SERVER_EGRESS", "CLOUD", "UNKNOWN"]
+              },
+              "reason": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "audioDevice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "channels", "default"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "channels": { "type": "integer", "minimum": 1 },
+        "default": { "type": "boolean" },
+        "sampleRate": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    }
+  }
+}

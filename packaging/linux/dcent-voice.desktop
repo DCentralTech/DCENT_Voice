@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=DCENT Voice
+Comment=Local-first voice dictation
+Exec=dcent-voice
+Icon=dcent-voice
+Terminal=false
+Categories=Utility;
+Keywords=dictation;speech;stt;voice;
+StartupNotify=false
+X-DCENT-Sovereignty=LOCAL

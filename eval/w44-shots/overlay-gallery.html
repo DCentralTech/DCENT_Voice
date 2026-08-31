@@ -1,0 +1,34 @@
+<!doctype html>
+<!-- DCENT_Voice — open-source, local-first voice dictation
+     Copyright (c) 2026 D-Central Technologies — decentralized technologies for digital sovereignty
+     SPDX-License-Identifier: MIT -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>W44 overlay states</title>
+    <style>
+      html, body { margin: 0; background: #1a1613; color: #f0e6d8; font: 13px/1.4 system-ui, "Segoe UI", sans-serif; }
+      body { padding: 24px; }
+      h1 { margin: 0 0 8px; font-size: 18px; font-weight: 650; }
+      .note { margin: 0 0 20px; color: #9a8d7e; max-width: 72ch; }
+      .grid { display: grid; grid-template-columns: repeat(3, minmax(240px, 1fr)); gap: 16px; }
+      .card { border: 1px solid rgba(232, 93, 0, .2); border-radius: 10px; background: #0d0d0d; overflow: hidden; }
+      .card h2 { margin: 0; padding: 8px 10px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #c4a574; border-bottom: 1px solid rgba(255,255,255,.06); }
+      iframe { display: block; width: 100%; height: 168px; border: 0; background: #14110f; }
+    </style>
+  </head>
+  <body>
+    <h1>DCENT_Voice overlay states</h1>
+    <p class="note">Harness gallery for visual review. Idle is the hidden overlay. Product overlay stays click-through and never activates.</p>
+    <div class="grid">
+      <section class="card"><h2>Listening</h2><iframe src="overlay-frame.html?state=listening&amp;pulse=0.55" title="Listening"></iframe></section>
+      <section class="card"><h2>Loading model</h2><iframe src="overlay-frame.html?state=loading&amp;msg=Warming%20Parakeet&amp;pulse=0.1" title="Loading"></iframe></section>
+      <section class="card"><h2>Processing</h2><iframe src="overlay-frame.html?state=processing&amp;pulse=0.15" title="Processing"></iframe></section>
+      <section class="card"><h2>Live / streaming</h2><iframe src="overlay-frame.html?state=streaming&amp;msg=hello%20world&amp;pulse=0.6" title="Streaming"></iframe></section>
+      <section class="card"><h2>Command</h2><iframe src="overlay-frame.html?state=command&amp;pulse=0.4" title="Command"></iframe></section>
+      <section class="card"><h2>Inserted</h2><iframe src="overlay-frame.html?state=active&amp;pulse=0.2" title="Inserted"></iframe></section>
+      <section class="card"><h2>No speech</h2><iframe src="overlay-frame.html?state=discarded&amp;msg=Nothing%20to%20insert" title="No speech"></iframe></section>
+      <section class="card"><h2>Microphone / cloud</h2><iframe src="overlay-frame.html?state=permission&amp;msg=Check%20the%20microphone&amp;cloud=1" title="Permission"></iframe></section>
+    </div>
+  </body>
+</html>

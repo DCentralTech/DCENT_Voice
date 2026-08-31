@@ -1,0 +1,52 @@
+{
+  "schema": "dcent-writing-eval-v1",
+  "description": "Local Auto Cleanup level diffs. Not ASR WER. Not cloud Auto Cleanup parity.",
+  "items": [
+    {
+      "id": "none-keeps-raw",
+      "kind": "cleanup",
+      "cleanup_level": "none",
+      "input": "um I was going to I want to ship Monday",
+      "exact": "um I was going to I want to ship Monday"
+    },
+    {
+      "id": "light-fills-only",
+      "kind": "cleanup",
+      "cleanup_level": "light",
+      "input": "um I was going to I want to ship Monday",
+      "exact": "I was going to I want to ship Monday.",
+      "must_differ_from_levels": {
+        "none": "um I was going to I want to ship Monday",
+        "medium": "I want to ship Monday."
+      }
+    },
+    {
+      "id": "medium-rewrites-false-start",
+      "kind": "cleanup",
+      "cleanup_level": "medium",
+      "input": "um I was going to I want to ship Monday",
+      "exact": "I want to ship Monday.",
+      "must_differ_from_levels": {
+        "light": "I was going to I want to ship Monday."
+      }
+    },
+    {
+      "id": "high-drops-local-hedges",
+      "kind": "cleanup",
+      "cleanup_level": "high",
+      "input": "um I think we should, I guess, ship Monday",
+      "exact": "We should ship Monday.",
+      "must_differ_from_levels": {
+        "medium": "I think we should, I guess, ship Monday."
+      }
+    },
+    {
+      "id": "default-medium-keeps-lead-hedge",
+      "kind": "cleanup",
+      "cleanup_level": "medium",
+      "input": "I think we should ship Monday",
+      "must_contain": ["I think"],
+      "must_not_contain": []
+    }
+  ]
+}

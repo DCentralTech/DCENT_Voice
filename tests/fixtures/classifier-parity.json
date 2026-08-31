@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "description": "Cross-language sovereignty classifier parity vectors. TS, Rust, and Python implementations must classify these identically.",
+  "hostCases": [
+    { "input": "", "expectedClass": "CLOUD" },
+    { "input": "localhost", "expectedClass": "LOCAL" },
+    { "input": "127.0.0.1", "expectedClass": "LOCAL" },
+    { "input": "0.0.0.0", "expectedClass": "LOCAL" },
+    { "input": "::1", "expectedClass": "LOCAL" },
+    { "input": "10.0.0.2", "expectedClass": "LAN" },
+    { "input": "172.15.255.255", "expectedClass": "CLOUD" },
+    { "input": "172.16.0.1", "expectedClass": "LAN" },
+    { "input": "172.31.255.255", "expectedClass": "LAN" },
+    { "input": "172.32.0.1", "expectedClass": "CLOUD" },
+    { "input": "192.168.1.20", "expectedClass": "LAN" },
+    { "input": "169.254.10.20", "expectedClass": "LAN" },
+    { "input": "8.8.8.8", "expectedClass": "CLOUD" },
+    { "input": "fe80::1", "expectedClass": "LAN" },
+    { "input": "fd00::1", "expectedClass": "LAN" },
+    { "input": "2606:4700:4700::1111", "expectedClass": "CLOUD" },
+    { "input": "server.local", "expectedClass": "LAN" },
+    { "input": "server.lan", "expectedClass": "LAN" },
+    { "input": "api.openai.com", "expectedClass": "CLOUD" },
+    { "input": "example.internal", "expectedClass": "CLOUD" }
+  ],
+  "endpointCases": [
+    {
+      "endpointId": "ollama-loopback",
+      "ownerId": "provider:ollama",
+      "url": "http://127.0.0.1:11434/v1",
+      "resolvedAddresses": [],
+      "expectedClass": "LOCAL"
+    },
+    {
+      "endpointId": "ollama-lan",
+      "ownerId": "provider:ollama",
+      "url": "http://ollama.example.test:11434/v1",
+      "resolvedAddresses": ["192.168.1.10"],
+      "expectedClass": "LAN"
+    },
+    {
+      "endpointId": "dns-trick",
+      "ownerId": "provider:custom",
+      "url": "http://printer.local:11434/v1",
+      "resolvedAddresses": ["8.8.8.8"],
+      "expectedClass": "CLOUD"
+    },
+    {
+      "endpointId": "openrouter",
+      "ownerId": "provider:openrouter",
+      "url": "https://openrouter.ai/api/v1",
+      "resolvedAddresses": [],
+      "expectedClass": "CLOUD"
+    }
+  ]
+}

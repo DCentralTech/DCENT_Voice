@@ -1,0 +1,2 @@
+WS4 marker: `dcent-voice doctor` exists, so CI runs the doctor gate.
+See scripts/qa/README.md.
