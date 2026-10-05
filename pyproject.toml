@@ -110,7 +110,7 @@ dev = [
   # unconstrained PyInstaller after ``uv sync`` makes tagged artifacts
   # dependent on whatever the package index serves that day.
   "pyinstaller>=6.11,<7",
-  "mypy==2.3.1",
+  "mypy==2.4.0",
   "pytest>=8.2",
   "pytest-timeout>=2.3",
   "pre-commit>=4",
